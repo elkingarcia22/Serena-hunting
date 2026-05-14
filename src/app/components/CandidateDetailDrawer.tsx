@@ -361,7 +361,7 @@ export function CandidateDetailDrawer({
   return (
     <div id="candidate-detail-drawer" className="h-full bg-gray-50 flex flex-col relative">
       <Toaster position="top-center" />
-      <FeedbackFAB onClick={openFeedback} />
+      {/* <FeedbackFAB onClick={openFeedback} /> */}
       
       {/* Candidate Header */}
       <div data-tour="candidate-header">

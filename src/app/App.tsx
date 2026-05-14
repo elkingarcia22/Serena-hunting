@@ -11,9 +11,9 @@ function OnboardingManager() {
   
   return (
     <>
-      <WelcomeOverlay />
-      <OnboardingTour />
-      <FeedbackModal isOpen={isFeedbackModalOpen} onClose={closeFeedback} />
+      {/* <WelcomeOverlay /> */}
+      {/* <OnboardingTour /> */}
+      {/* <FeedbackModal isOpen={isFeedbackModalOpen} onClose={closeFeedback} /> */}
     </>
   );
 }
