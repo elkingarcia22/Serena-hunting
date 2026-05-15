@@ -430,43 +430,67 @@ export function SerenaIAPanel({ isOpen, onClose, candidate, mode, allCandidates,
   const candidateName = candidate?.name || 'el candidato';
   const isGlobal = mode === 'global';
   const isSearch = mode === 'search';
+  const prevSearchTriggerRef = useRef<number>(0);
 
   // Efecto para manejar disparadores externos de búsqueda
   useEffect(() => {
     if (searchTrigger && searchTrigger > 0) {
-      setMessages([]); // Limpiar historial al iniciar nueva búsqueda inteligente
-      setCurrentTitle('Búsqueda Inteligente');
-      setIsTyping(true);
-      
-      // Mensaje de inicio de búsqueda
-      const startMsg: Message = {
-        id: `search-start-${searchTrigger}`,
-        from: 'ai',
-        text: `Hola 👋 Estoy buscando candidatos ideales para proponerte para esta vacante. Dame un momento mientras analizo nuestra base de datos...`,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        isActionable: false
-      };
-      
-      setMessages([startMsg]);
+      // Detectar si el panel ya estaba abierto (retrigger mientras busca activamente)
+      const isRetrigger = prevSearchTriggerRef.current > 0 && prevSearchTriggerRef.current !== searchTrigger && isOpen;
 
-      // Simular búsqueda
-      setTimeout(() => {
+      if (isRetrigger) {
+        // Error flow: mostrar mensaje de error cuando se intenta buscar nuevamente mientras está activo
+        setMessages([]);
+        setCurrentTitle('Búsqueda Inteligente');
+        setIsTyping(false);
+
+        const errorMsg: Message = {
+          id: `search-error-${searchTrigger}`,
+          from: 'ai',
+          text: `No se puede iniciar la búsqueda. Error humano. Por favor intenta más tarde.`,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          isActionable: false
+        };
+        setMessages([errorMsg]);
+      } else {
+        // Normal search flow: primera vez abriendo búsqueda
+        setMessages([]); // Limpiar historial al iniciar nueva búsqueda inteligente
+        setCurrentTitle('Búsqueda Inteligente');
         setIsTyping(true);
+
+        // Mensaje de inicio de búsqueda
+        const startMsg: Message = {
+          id: `search-start-${searchTrigger}`,
+          from: 'ai',
+          text: `Hola 👋 Estoy buscando candidatos ideales para proponerte para esta vacante. Dame un momento mientras analizo nuestra base de datos...`,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          isActionable: false
+        };
+
+        setMessages([startMsg]);
+
+        // Simular búsqueda
         setTimeout(() => {
-          const mockResults = generateMockCandidates(5);
-          const resultsMsg: Message = {
-            id: `search-results-${searchTrigger}`,
-            from: 'ai',
-            text: `¡He encontrado estos 5 candidatos que encajan perfectamente con el perfil buscado! Puedes revisar sus detalles a continuación:`,
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            candidates: mockResults
-          };
-          setMessages(prev => [...prev, resultsMsg]);
-          setIsTyping(false);
-        }, 3000);
-      }, 1500);
+          setIsTyping(true);
+          setTimeout(() => {
+            const mockResults = generateMockCandidates(5);
+            const resultsMsg: Message = {
+              id: `search-results-${searchTrigger}`,
+              from: 'ai',
+              text: `¡He encontrado estos 5 candidatos que encajan perfectamente con el perfil buscado! Puedes revisar sus detalles a continuación:`,
+              timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              candidates: mockResults
+            };
+            setMessages(prev => [...prev, resultsMsg]);
+            setIsTyping(false);
+          }, 3000);
+        }, 1500);
+      }
+
+      // Actualizar ref para próxima vez
+      prevSearchTriggerRef.current = searchTrigger;
     }
-  }, [searchTrigger]);
+  }, [searchTrigger, isOpen]);
   
   // Encontrar candidatos bloqueados (solo para modo global)
   const blockedCandidates = isGlobal 
