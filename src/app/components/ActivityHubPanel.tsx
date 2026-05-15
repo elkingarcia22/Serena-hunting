@@ -455,25 +455,25 @@ export function ActivityHubPanel({
           <TabsList className="w-full justify-start bg-transparent gap-0.5 h-auto p-0 flex-nowrap">
             <TabsTrigger 
               value="serena" 
-              className="data-[state=active]:bg-slate-100 data-[state=active]:text-slate-900 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none border-b-2 border-transparent px-2 py-2.5 text-xs font-medium text-gray-600 hover:text-gray-900 hover:bg-slate-50 transition-colors whitespace-nowrap"
+              className="data-[state=active]:bg-gray-100 data-[state=active]:text-gray-900 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none border-b-2 border-transparent px-2 py-2.5 text-xs font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors whitespace-nowrap"
             >
               Serena IA
             </TabsTrigger>
             <TabsTrigger 
               value="activity" 
-              className="data-[state=active]:bg-slate-100 data-[state=active]:text-slate-900 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none border-b-2 border-transparent px-2 py-2.5 text-xs font-medium text-gray-600 hover:text-gray-900 hover:bg-slate-50 transition-colors whitespace-nowrap"
+              className="data-[state=active]:bg-gray-100 data-[state=active]:text-gray-900 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none border-b-2 border-transparent px-2 py-2.5 text-xs font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors whitespace-nowrap"
             >
               Actividad
             </TabsTrigger>
             <TabsTrigger 
               value="comments" 
-              className="data-[state=active]:bg-slate-100 data-[state=active]:text-slate-900 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none border-b-2 border-transparent px-2 py-2.5 text-xs font-medium text-gray-600 hover:text-gray-900 hover:bg-slate-50 transition-colors whitespace-nowrap"
+              className="data-[state=active]:bg-gray-100 data-[state=active]:text-gray-900 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none border-b-2 border-transparent px-2 py-2.5 text-xs font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors whitespace-nowrap"
             >
               Comentarios
             </TabsTrigger>
             <TabsTrigger 
               value="todos" 
-              className="data-[state=active]:bg-slate-100 data-[state=active]:text-slate-900 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none border-b-2 border-transparent px-2 py-2.5 text-xs font-medium text-gray-600 hover:text-gray-900 hover:bg-slate-50 transition-colors whitespace-nowrap"
+              className="data-[state=active]:bg-gray-100 data-[state=active]:text-gray-900 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none border-b-2 border-transparent px-2 py-2.5 text-xs font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors whitespace-nowrap"
             >
               Tareas
             </TabsTrigger>
@@ -487,14 +487,14 @@ export function ActivityHubPanel({
             
             {/* Serena Initial Diagnostic Hub */}
             <div className="flex items-start gap-4 animate-in fade-in slide-in-from-top-4 duration-700">
-              <div className="w-9 h-9 rounded-full bg-slate-900 flex items-center justify-center flex-shrink-0 shadow-lg border-2 border-white ring-1 ring-slate-100">
+              <div className="w-9 h-9 rounded-full bg-gray-900 flex items-center justify-center flex-shrink-0 shadow-lg border-2 border-white ring-1 ring-gray-100">
                 <Sparkles className="w-5 h-5 text-white" />
               </div>
               <div className="flex-1 space-y-4">
-                <div className="bg-slate-50 rounded-2xl rounded-tl-none p-5 shadow-sm border border-slate-100 max-w-[95%]">
+                <div className="bg-gray-50 rounded-2xl rounded-tl-none p-5 shadow-sm border border-gray-100 max-w-[95%]">
                   <div className="space-y-4">
-                    <p className="text-sm text-slate-700 font-medium leading-relaxed">
-                      Hola. He analizado el perfil de <span className="font-bold text-slate-900">{candidate?.name}</span> y su estado en el proceso actual:
+                    <p className="text-sm text-gray-700 font-medium leading-relaxed">
+                      Hola. He analizado el perfil de <span className="font-bold text-gray-900">{candidate?.name}</span> y su estado en el proceso actual:
                     </p>
 
                     {/* Multi-Vacancy Diagnostic List */}
@@ -504,9 +504,9 @@ export function ActivityHubPanel({
                         const isBlocked = !!app.blocker;
                         
                         return (
-                          <div key={app.id} className="bg-white rounded-xl border border-slate-100 p-4 space-y-3">
+                          <div key={app.id} className="bg-white rounded-xl border border-gray-100 p-4 space-y-3">
                             <div className="flex items-center justify-between">
-                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{app.jobTitle}</span>
+                              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{app.jobTitle}</span>
                               {isBlocked ? (
                                 <Badge className="bg-amber-50 text-amber-600 border-amber-100 text-[10px] font-bold px-2 py-0">En riesgo</Badge>
                               ) : (
@@ -519,7 +519,7 @@ export function ActivityHubPanel({
                                 "mt-1.5 w-1.5 h-1.5 rounded-full shrink-0",
                                 isBlocked ? "bg-amber-500 animate-pulse" : "bg-emerald-500"
                               )} />
-                              <p className="text-xs text-slate-600 font-medium leading-snug">
+                              <p className="text-xs text-gray-600 font-medium leading-snug">
                                 {isBlocked 
                                   ? (app.blocker?.reason || `Bloqueado en ${app.currentStage.replace(/-/g, ' ')}. Se requiere acción.`)
                                   : `Activo en ${app.currentStage.replace(/-/g, ' ')}. Esperando siguiente interacción.`}
@@ -548,7 +548,7 @@ export function ActivityHubPanel({
                               )}
                               <button 
                                 onClick={() => handleExecuteAction('move', `Mover etapa en ${app.jobTitle}`)}
-                                className="text-[10px] font-bold bg-slate-50 text-slate-600 hover:bg-slate-100 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5"
+                                className="text-[10px] font-bold bg-gray-50 text-gray-600 hover:bg-gray-100 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5"
                               >
                                 <ArrowRight className="w-3 h-3" />
                                 Mover Etapa
@@ -568,11 +568,11 @@ export function ActivityHubPanel({
               <div key={idx} className={cn("flex flex-col gap-2", message.from === 'user' ? "items-end" : "items-start")}>
                 {message.from === 'ai' ? (
                   <div className="flex items-start gap-4 w-full max-w-[95%]">
-                    <div className="w-9 h-9 rounded-full bg-slate-900 flex items-center justify-center flex-shrink-0 shadow-md">
+                    <div className="w-9 h-9 rounded-full bg-gray-900 flex items-center justify-center flex-shrink-0 shadow-md">
                       <Sparkles className="w-5 h-5 text-white" />
                     </div>
-                    <div className="bg-slate-50 rounded-2xl rounded-tl-none p-5 shadow-sm border border-slate-100 w-full">
-                      <p className="text-sm text-slate-600 leading-relaxed font-medium">{message.text}</p>
+                    <div className="bg-gray-50 rounded-2xl rounded-tl-none p-5 shadow-sm border border-gray-100 w-full">
+                      <p className="text-sm text-gray-600 leading-relaxed font-medium">{message.text}</p>
                     </div>
                   </div>
                 ) : (
@@ -585,14 +585,14 @@ export function ActivityHubPanel({
             
             {isAITyping && (
               <div className="flex items-start gap-4 w-full max-w-[95%] animate-pulse">
-                <div className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0">
-                  <Sparkles className="w-5 h-5 text-slate-300" />
+                <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                  <Sparkles className="w-5 h-5 text-gray-300" />
                 </div>
-                <div className="bg-slate-50/50 rounded-2xl rounded-tl-none p-5 border border-slate-100/50 w-full">
+                <div className="bg-gray-50 rounded-2xl rounded-tl-none p-5 border border-gray-100/50 w-full">
                   <div className="flex gap-1.5 items-center">
-                    <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                    <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                   </div>
                 </div>
               </div>
@@ -600,7 +600,7 @@ export function ActivityHubPanel({
           </div>
 
           {/* Chat Area & Input */}
-          <div className="border-t border-slate-100 p-5 bg-white">
+          <div className="border-t border-gray-100 p-5 bg-white">
             <div className="relative group">
               <Input
                 value={chatInput}
@@ -612,7 +612,7 @@ export function ActivityHubPanel({
                   }
                 }}
                 placeholder={`Pregunta algo sobre ${candidate?.name}...`}
-                className="w-full bg-slate-50 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-2xl pl-4 pr-12 py-6 text-sm transition-all"
+                className="w-full bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-2xl pl-4 pr-12 py-6 text-sm transition-all"
               />
               <div className="absolute right-2 top-1/2 -translate-y-1/2">
                 <Button
@@ -625,7 +625,7 @@ export function ActivityHubPanel({
                 </Button>
               </div>
             </div>
-            <p className="text-[10px] text-center text-slate-400 mt-3 font-medium">
+            <p className="text-[10px] text-center text-gray-400 mt-3 font-medium">
               Serena IA puede cometer errores. Verifica la información importante.
             </p>
           </div>
@@ -881,7 +881,7 @@ export function ActivityHubPanel({
                 comments.map((comment) => (
                   <div key={comment.id} className="group/comment flex items-start gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                     <Avatar className="w-8 h-8">
-                      <div className="w-full h-full bg-gradient-to-br from-slate-500 to-blue-600 flex items-center justify-center text-white text-sm">
+                      <div className="w-full h-full bg-gradient-to-br from-gray-500 to-blue-600 flex items-center justify-center text-white text-sm">
                         {comment.authorInitials}
                       </div>
                     </Avatar>

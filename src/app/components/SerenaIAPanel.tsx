@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { toast } from 'sonner';
-import { Sparkles, X, Send, ChevronDown, Plus, Copy, Edit2, MessageCircle, Mail, AlertCircle } from 'lucide-react';
+import { Sparkles, X, Send, ChevronDown, Plus, Copy, Edit2, MessageCircle, Mail, AlertCircle, MapPin, User, Phone, GraduationCap, Briefcase } from 'lucide-react';
 import { cn } from './ui/utils';
 import { Badge } from './ui/badge';
 
@@ -10,16 +10,108 @@ interface Message {
   text: string;
   timestamp: string;
   isActionable?: boolean;
+  candidates?: any[];
 }
 
 interface SerenaIAPanelProps {
   isOpen: boolean;
   onClose: () => void;
   candidate?: any;
-  mode?: 'candidate' | 'global';
+  mode?: 'candidate' | 'global' | 'search';
   allCandidates?: any[];
   isValentina?: boolean;
+  searchTrigger?: number;
+  onImportCandidate?: (candidate: any) => void;
 }
+
+const generateMockCandidates = (count: number) => {
+  const baseCandidates = [
+    {
+      name: "Carlos Mario Restrepo",
+      role: "Senior Product Designer",
+      location: "Medellín, Colombia",
+      idNumber: "1.020.456.789",
+      email: "c.restrepo@uxdesign.com",
+      phone: "+57 310 456 7890",
+      education: [
+        { title: "Maestría en Diseño de Interacción", date: "2018 - 2020" },
+        { title: "Diseño Industrial", date: "2012 - 2017" }
+      ],
+      experience: [
+        { title: "Product Lead en Rappi", date: "2021 - Presente" },
+        { title: "UX Designer en Globant", date: "2018 - 2021" }
+      ]
+    },
+    {
+      name: "Ana María Jiménez",
+      role: "UX/UI Designer Specialist",
+      location: "Bogotá, Colombia",
+      idNumber: "52.789.012",
+      email: "ana.jimenez@creative.co",
+      phone: "+57 300 789 0123",
+      education: [
+        { title: "Especialización en UI/UX", date: "2019" },
+        { title: "Artes Visuales", date: "2014 - 2018" }
+      ],
+      experience: [
+        { title: "UI Designer en Mercado Libre", date: "2020 - Presente" },
+        { title: "Junior Designer en StartUp X", date: "2018 - 2020" }
+      ]
+    },
+    {
+      name: "Mateo Holguín",
+      role: "Visual Product Designer",
+      location: "Cali, Colombia",
+      idNumber: "1.144.321.654",
+      email: "m.holguin@designstudio.com",
+      phone: "+57 315 321 6543",
+      education: [
+        { title: "Diseño Gráfico", date: "2013 - 2018" }
+      ],
+      experience: [
+        { title: "Senior Designer en Bancolombia", date: "2019 - Presente" }
+      ]
+    },
+    {
+      name: "Valentina Correa",
+      role: "UX Researcher & Designer",
+      location: "Manizales, Colombia",
+      idNumber: "1.053.987.654",
+      email: "v.correa@researchhub.io",
+      phone: "+57 320 987 6543",
+      education: [
+        { title: "Psicología", date: "2010 - 2015" }
+      ],
+      experience: [
+        { title: "UX Researcher en Uber", date: "2018 - Presente" }
+      ]
+    },
+    {
+      name: "Sebastián Quintana",
+      role: "Lead Product Designer",
+      location: "Barranquilla, Colombia",
+      idNumber: "72.456.123",
+      email: "s.quintana@techsolutions.com",
+      phone: "+57 301 456 1234",
+      education: [
+        { title: "Ingeniería de Sistemas", date: "2011 - 2016" }
+      ],
+      experience: [
+        { title: "Lead Designer en NuBank", date: "2020 - Presente" }
+      ]
+    }
+  ];
+
+  const results = [];
+  for (let i = 0; i < count; i++) {
+    const base = baseCandidates[i % baseCandidates.length];
+    results.push({
+      ...base,
+      name: i >= baseCandidates.length ? `${base.name} (${i + 1})` : base.name
+    });
+  }
+  return results;
+};
 
 const getMockAIResponse = (question: string, candidateName: string) => {
   const q = question.toLowerCase();
@@ -35,15 +127,54 @@ const getMockAIResponse = (question: string, candidateName: string) => {
   return `He analizado ese punto en el perfil de ${candidateName}. Su experiencia sugiere que tiene las competencias necesarias, aunque valdría la pena profundizar en la entrevista técnica sobre sus metodologías específicas.`;
 };
 
-export function SerenaIAPanel({ isOpen, onClose, candidate, mode, allCandidates, isValentina }: SerenaIAPanelProps) {
+export function SerenaIAPanel({ isOpen, onClose, candidate, mode, allCandidates, isValentina, searchTrigger }: SerenaIAPanelProps) {
   const [chatInput, setChatInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [currentTitle, setCurrentTitle] = useState('Serena IA');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const candidateName = candidate?.name || 'el candidato';
   const isGlobal = mode === 'global';
+  const isSearch = mode === 'search';
+
+  // Efecto para manejar disparadores externos de búsqueda
+  useEffect(() => {
+    if (searchTrigger && searchTrigger > 0) {
+      setMessages([]); // Limpiar historial al iniciar nueva búsqueda inteligente
+      setCurrentTitle('Búsqueda Inteligente');
+      setIsTyping(true);
+      
+      // Mensaje de inicio de búsqueda
+      const startMsg: Message = {
+        id: `search-start-${searchTrigger}`,
+        from: 'ai',
+        text: `Hola 👋 Estoy buscando candidatos ideales para proponerte para esta vacante. Dame un momento mientras analizo nuestra base de datos...`,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        isActionable: false
+      };
+      
+      setMessages([startMsg]);
+
+      // Simular búsqueda
+      setTimeout(() => {
+        setIsTyping(true);
+        setTimeout(() => {
+          const mockResults = generateMockCandidates(5);
+          const resultsMsg: Message = {
+            id: `search-results-${searchTrigger}`,
+            from: 'ai',
+            text: `¡He encontrado estos 5 candidatos que encajan perfectamente con el perfil buscado! Puedes revisar sus detalles a continuación:`,
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            candidates: mockResults
+          };
+          setMessages(prev => [...prev, resultsMsg]);
+          setIsTyping(false);
+        }, 3000);
+      }, 1500);
+    }
+  }, [searchTrigger]);
   
   // Encontrar candidatos bloqueados (solo para modo global)
   const blockedCandidates = isGlobal 
@@ -57,12 +188,14 @@ export function SerenaIAPanel({ isOpen, onClose, candidate, mode, allCandidates,
     ? (candidate?.applications?.filter((a: any) => a.status === 'active') || [])
     : [];
 
-  // Efecto inicial para saludar y dar contexto
+  // Efecto inicial para saludar y dar contexto (Modos Global y Candidato)
   useEffect(() => {
-    if (isOpen && messages.length === 0) {
+    if (isOpen && !isSearch) {
+      setMessages([]); // Limpiar mensajes al abrir o cambiar modo
       setIsTyping(true);
       setTimeout(() => {
         if (isGlobal) {
+          setCurrentTitle('Serena IA');
           setMessages([
             {
               id: 'initial-global',
@@ -96,7 +229,7 @@ export function SerenaIAPanel({ isOpen, onClose, candidate, mode, allCandidates,
         setIsTyping(false);
       }, 800);
     }
-  }, [isOpen, isGlobal]);
+  }, [isOpen, mode, isGlobal, isSearch]);
 
   useEffect(() => {
     if (isOpen && inputRef.current) {
@@ -119,16 +252,44 @@ export function SerenaIAPanel({ isOpen, onClose, candidate, mode, allCandidates,
     };
 
     setMessages(prev => [...prev, userMsg]);
+    const input = chatInput.toLowerCase();
     setChatInput('');
     setIsTyping(true);
 
     setTimeout(() => {
-      const aiMsg: Message = {
-        id: (Date.now() + 1).toString(),
-        from: 'ai',
-        text: getMockAIResponse(chatInput, candidateName),
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      };
+      let aiMsg: Message;
+      
+      // Detectar si pide investigar algo puntual de un candidato en modo búsqueda
+      if (isSearch && (input.includes('investiga') || input.includes('averigua') || input.includes('más sobre') || input.includes('detalle de'))) {
+        aiMsg = {
+          id: (Date.now() + 1).toString(),
+          from: 'ai',
+          text: `Por el momento solo puedo generar y proponerte nuevos candidatos afines a la vacante. No tengo la capacidad de investigar más a fondo sobre ellos más allá de la información que te he presentado.`,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        };
+      }
+      // Detectar si pide más candidatos en modo búsqueda
+      else if (isSearch && (input.includes('otros') || input.includes('más') || input.includes('dame'))) {
+        const match = input.match(/\d+/);
+        const count = match ? parseInt(match[0]) : 5;
+        const cappedCount = Math.min(count, 10); // Limite de seguridad
+
+        aiMsg = {
+          id: (Date.now() + 1).toString(),
+          from: 'ai',
+          text: `¡Claro! He encontrado otros ${cappedCount} candidatos que también se ajustan al perfil. Aquí tienes los resultados:`,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          candidates: generateMockCandidates(cappedCount)
+        };
+      } else {
+        aiMsg = {
+          id: (Date.now() + 1).toString(),
+          from: 'ai',
+          text: getMockAIResponse(chatInput, candidateName),
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        };
+      }
+      
       setMessages(prev => [...prev, aiMsg]);
       setIsTyping(false);
     }, 1500);
@@ -159,8 +320,8 @@ export function SerenaIAPanel({ isOpen, onClose, candidate, mode, allCandidates,
   return (
     <div 
       className={cn(
-        "h-full bg-white border-l border-gray-100 flex flex-col transition-all duration-300 ease-in-out overflow-hidden shadow-[-10px_0_30px_-15px_rgba(0,0,0,0.1)]",
-        isOpen ? "w-[420px] opacity-100" : "w-0 opacity-0 border-none"
+        "h-full bg-white flex flex-col transition-all duration-300 ease-in-out overflow-hidden flex-shrink-0",
+        isOpen ? "w-[420px] opacity-100" : "w-0 opacity-0"
       )}
     >
       {/* Absolute container to ensure it doesn't push parent height if content overflows */}
@@ -168,7 +329,9 @@ export function SerenaIAPanel({ isOpen, onClose, candidate, mode, allCandidates,
         {/* Header - Fixed height */}
         <div className="flex-shrink-0 px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-white z-10">
           <div className="flex items-center gap-2">
-            <h2 className="text-lg font-bold text-slate-800">Serena IA</h2>
+            <h2 className="text-lg font-bold text-gray-800">
+              {isSearch ? "Búsqueda Inteligente" : "Serena IA"}
+            </h2>
           </div>
           <button 
             onClick={onClose}
@@ -196,10 +359,114 @@ export function SerenaIAPanel({ isOpen, onClose, candidate, mode, allCandidates,
                 <div className={cn(
                   "p-4 rounded-2xl text-sm leading-relaxed shadow-sm",
                   msg.from === 'user' 
-                    ? "bg-slate-100/80 text-slate-800 rounded-tr-none" 
-                    : "bg-white border border-gray-100 text-slate-700 rounded-tl-none"
+                    ? "bg-gray-100/80 text-gray-800 rounded-tr-none" 
+                    : "bg-white border border-gray-100 text-gray-700 rounded-tl-none"
                 )}>
                   {msg.text}
+
+                  {/* Candidate Search Results Cards */}
+                  {msg.candidates && (
+                    <div className="mt-6 space-y-6">
+                      {msg.candidates.map((candidate, idx) => (
+                        <div key={idx} className="bg-gray-50 border border-gray-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all">
+                          {/* Card Header */}
+                          <div className="p-4 bg-white border-b border-gray-100 flex items-start gap-3">
+                            <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 shrink-0">
+                              <User className="w-6 h-6" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h4 className="text-sm font-black text-gray-800 truncate">{candidate.name}</h4>
+                              <p className="text-[11px] font-bold text-blue-600 uppercase tracking-tight">{candidate.role}</p>
+                              <div className="flex items-center gap-1.5 mt-1 text-gray-400">
+                                <MapPin className="w-3 h-3" />
+                                <span className="text-[10px] font-medium">{candidate.location}</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Card Body - Details */}
+                          <div className="p-4 space-y-4">
+                            {/* Personal Info Grid */}
+                            <div className="grid grid-cols-2 gap-3 pb-3 border-b border-gray-200/50">
+                              <div className="space-y-1">
+                                <p className="text-[9px] font-bold text-gray-400 uppercase">Cédula</p>
+                                <p className="text-[11px] font-semibold text-gray-700">{candidate.idNumber}</p>
+                              </div>
+                              <div className="space-y-1">
+                                <p className="text-[9px] font-bold text-gray-400 uppercase">Celular</p>
+                                <div className="flex items-center gap-1">
+                                  <Phone className="w-3 h-3 text-gray-400" />
+                                  <p className="text-[11px] font-semibold text-gray-700">{candidate.phone}</p>
+                                </div>
+                              </div>
+                              <div className="col-span-2 space-y-1">
+                                <p className="text-[9px] font-bold text-gray-400 uppercase">Email</p>
+                                <div className="flex items-center gap-1">
+                                  <Mail className="w-3 h-3 text-gray-400" />
+                                  <p className="text-[11px] font-semibold text-gray-700">{candidate.email}</p>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Education & Experience */}
+                            <div className="space-y-4">
+                              {/* Education */}
+                              <div>
+                                <div className="flex items-center gap-2 mb-2">
+                                  <GraduationCap className="w-3.5 h-3.5 text-blue-500" />
+                                  <span className="text-[10px] font-bold text-gray-800 uppercase tracking-wider">Educación</span>
+                                </div>
+                                <div className="space-y-2 pl-5 border-l-2 border-gray-100">
+                                  {candidate.education.map((edu: any, i: number) => (
+                                    <div key={i} className="relative">
+                                      <div className="absolute -left-[23px] top-1.5 w-2 h-2 rounded-full bg-gray-200" />
+                                      <p className="text-[11px] font-bold text-gray-700 leading-tight">{edu.title}</p>
+                                      <p className="text-[10px] text-gray-400 font-medium">{edu.date}</p>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+
+                              {/* Experience */}
+                              <div>
+                                <div className="flex items-center gap-2 mb-2">
+                                  <Briefcase className="w-3.5 h-3.5 text-indigo-500" />
+                                  <span className="text-[10px] font-bold text-gray-800 uppercase tracking-wider">Experiencia</span>
+                                </div>
+                                <div className="space-y-2 pl-5 border-l-2 border-gray-100">
+                                  {candidate.experience.map((exp: any, i: number) => (
+                                    <div key={i} className="relative">
+                                      <div className="absolute -left-[23px] top-1.5 w-2 h-2 rounded-full bg-gray-200" />
+                                      <p className="text-[11px] font-bold text-gray-700 leading-tight">{exp.title}</p>
+                                      <p className="text-[10px] text-gray-400 font-medium">{exp.date}</p>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Action Footer */}
+                          <div className="p-3 bg-gray-50/80 border-t border-gray-100 flex gap-2">
+                            <button className="flex-1 py-2 bg-white border border-gray-200 rounded-xl text-[11px] font-bold text-gray-700 hover:bg-gray-100 transition-all shadow-sm">
+                              Ver perfil
+                            </button>
+                            <button 
+                              onClick={() => {
+                                if (onImportCandidate) {
+                                  onImportCandidate(candidate);
+                                  toast.success(`${candidate.name} importado correctamente.`);
+                                }
+                              }}
+                              className="flex-1 py-2 bg-blue-600 rounded-xl text-[11px] font-bold text-white hover:bg-blue-700 transition-all shadow-md shadow-blue-100"
+                            >
+                              Importar
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
 
                   {/* Contextual Action Cards - Candidate Mode */}
                   {msg.isActionable && !isGlobal && activeApps.length > 0 && (
@@ -207,14 +474,14 @@ export function SerenaIAPanel({ isOpen, onClose, candidate, mode, allCandidates,
                       {activeApps.map((app: any) => {
                         const isBlocked = !!app.blocker;
                         return (
-                          <div key={app.id} className="bg-slate-50 border border-slate-100 rounded-xl p-3 space-y-3">
+                          <div key={app.id} className="bg-gray-50 border border-gray-100 rounded-xl p-3 space-y-3">
                             <div className="flex items-center justify-between">
-                              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                              <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
                                 {app.jobTitle}
                               </span>
                               <Badge className={cn(
                                 "text-[9px] px-1.5 py-0 border-none",
-                                isBlocked ? "bg-amber-100 text-amber-700" : "bg-slate-100 text-slate-600"
+                                isBlocked ? "bg-amber-100 text-amber-700" : "bg-gray-100 text-gray-600"
                               )}>
                                 {isBlocked ? 'BLOQUEADO' : 'EN PROCESO'}
                               </Badge>
@@ -223,23 +490,23 @@ export function SerenaIAPanel({ isOpen, onClose, candidate, mode, allCandidates,
                             {isBlocked && (
                               <div className="flex items-start gap-2 py-1">
                                 <AlertCircle className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
-                                <p className="text-[11px] text-slate-600 leading-tight">
+                                <p className="text-[11px] text-gray-600 leading-tight">
                                   {app.blocker?.reason || "Falta completar entrevista técnica."}
                                 </p>
                               </div>
                             )}
 
                             {isBlocked && (
-                              <div className="flex gap-2 pt-1 border-t border-slate-200/50">
+                              <div className="flex gap-2 pt-1 border-t border-gray-200/50">
                                 <button 
                                   onClick={() => handleAction('whatsapp')}
-                                  className="flex-1 flex items-center justify-center gap-1.5 py-1.5 bg-white border border-slate-200 rounded-lg text-[10px] font-bold text-slate-700 hover:bg-slate-100 transition-colors shadow-sm"
+                                  className="flex-1 flex items-center justify-center gap-1.5 py-1.5 bg-white border border-gray-200 rounded-lg text-[10px] font-bold text-gray-700 hover:bg-gray-100 transition-colors shadow-sm"
                                 >
                                   <MessageCircle className="w-3 h-3 text-emerald-500" /> WhatsApp
                                 </button>
                                 <button 
                                   onClick={() => handleAction('email')}
-                                  className="flex-1 flex items-center justify-center gap-1.5 py-1.5 bg-white border border-slate-200 rounded-lg text-[10px] font-bold text-slate-700 hover:bg-slate-100 transition-colors shadow-sm"
+                                  className="flex-1 flex items-center justify-center gap-1.5 py-1.5 bg-white border border-gray-200 rounded-lg text-[10px] font-bold text-gray-700 hover:bg-gray-100 transition-colors shadow-sm"
                                 >
                                   <Mail className="w-3 h-3 text-blue-500" /> Email
                                 </button>
@@ -254,17 +521,17 @@ export function SerenaIAPanel({ isOpen, onClose, candidate, mode, allCandidates,
                   {/* Contextual Action Cards - Global Mode */}
                   {msg.isActionable && isGlobal && blockedCandidates.length > 0 && (
                     <div className="mt-4 space-y-3">
-                      <p className="text-[11px] font-semibold text-slate-500 mb-2 px-1">CANDIDATOS CON BLOQUEOS:</p>
+                      <p className="text-[11px] font-semibold text-gray-500 mb-2 px-1">CANDIDATOS CON BLOQUEOS:</p>
                       {blockedCandidates.map((c: any) => {
                         const blockedApp = c.applications.find((a: any) => a.blocker);
                         return (
-                          <div key={c.id} className="bg-slate-50 border border-slate-100 rounded-xl p-3 space-y-3">
+                          <div key={c.id} className="bg-gray-50 border border-gray-100 rounded-xl p-3 space-y-3">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2">
                                 <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-[10px] font-bold text-blue-600">
                                   {c.name.charAt(0)}
                                 </div>
-                                <span className="text-xs font-bold text-slate-800">
+                                <span className="text-xs font-bold text-gray-800">
                                   {c.name}
                                 </span>
                               </div>
@@ -273,13 +540,13 @@ export function SerenaIAPanel({ isOpen, onClose, candidate, mode, allCandidates,
                               </Badge>
                             </div>
                             
-                            <div className="flex items-start gap-2 bg-white/50 p-2 rounded-lg border border-slate-100">
+                            <div className="flex items-start gap-2 bg-white/50 p-2 rounded-lg border border-gray-100">
                               <AlertCircle className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
                               <div className="space-y-1">
-                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">
+                                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-tighter">
                                   {blockedApp?.jobTitle}
                                 </p>
-                                <p className="text-[11px] text-slate-600 leading-tight">
+                                <p className="text-[11px] text-gray-600 leading-tight">
                                   {blockedApp?.blocker?.reason}
                                 </p>
                               </div>
@@ -288,7 +555,7 @@ export function SerenaIAPanel({ isOpen, onClose, candidate, mode, allCandidates,
                             <div className="flex gap-2 pt-1">
                               <button 
                                 onClick={() => handleAction('whatsapp', c.name)}
-                                className="flex-1 flex items-center justify-center gap-1.5 py-1.5 bg-white border border-slate-200 rounded-lg text-[10px] font-bold text-slate-700 hover:bg-slate-100 transition-colors shadow-sm"
+                                className="flex-1 flex items-center justify-center gap-1.5 py-1.5 bg-white border border-gray-200 rounded-lg text-[10px] font-bold text-gray-700 hover:bg-gray-100 transition-colors shadow-sm"
                               >
                                 <MessageCircle className="w-3 h-3 text-emerald-500" /> Ayudar vía WhatsApp
                               </button>
@@ -319,7 +586,7 @@ export function SerenaIAPanel({ isOpen, onClose, candidate, mode, allCandidates,
         {isTyping && (
           <div className="flex items-start gap-3">
              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-400 via-indigo-500 to-purple-500 shadow-lg flex-shrink-0 mt-1 animate-pulse border-2 border-white" />
-            <div className="bg-slate-50 rounded-2xl rounded-tl-none px-5 py-3 border border-gray-100">
+            <div className="bg-gray-50 rounded-2xl rounded-tl-none px-5 py-3 border border-gray-100">
               <div className="flex gap-1.5 items-center">
                 <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
                 <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '200ms' }} />
@@ -347,7 +614,7 @@ export function SerenaIAPanel({ isOpen, onClose, candidate, mode, allCandidates,
                 }
               }}
               placeholder="Responder..."
-              className="w-full bg-transparent border-none focus:ring-0 text-slate-700 placeholder:text-slate-400 resize-none text-sm outline-none"
+              className="w-full bg-transparent border-none focus:ring-0 text-gray-700 placeholder:text-gray-400 resize-none text-sm outline-none"
             />
           </div>
 

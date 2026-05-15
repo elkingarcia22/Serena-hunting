@@ -91,7 +91,7 @@ export function SerenaAIInterviewSection({ interviewData, score = 88, isValentin
       <div className="space-y-4">
         <div className="flex items-center gap-2 px-1">
           <Star className="w-5 h-5 text-gray-400" />
-          <h4 className="text-sm font-bold tracking-tight text-slate-700 uppercase">Análisis y Puntaje por Pregunta</h4>
+          <h4 className="text-sm font-bold tracking-tight text-gray-700 uppercase">Análisis y Puntaje por Pregunta</h4>
         </div>
         
         <div className="grid gap-3">
@@ -106,14 +106,14 @@ export function SerenaAIInterviewSection({ interviewData, score = 88, isValentin
                     </p>
                   </div>
                   <div>
-                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Pregunta</span>
+                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1">Pregunta</span>
                     <p className="text-sm font-bold text-gray-900 leading-relaxed">
                       {item.question}
                     </p>
                   </div>
                 </div>
                 <div className="flex flex-col items-center justify-center min-w-[70px] p-2 bg-gray-50 rounded-lg border border-gray-100">
-                  <span className="text-2xl font-black text-slate-800">{item.score}</span>
+                  <span className="text-2xl font-black text-gray-800">{item.score}</span>
                   <span className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">Puntos</span>
                 </div>
               </div>
@@ -127,14 +127,14 @@ export function SerenaAIInterviewSection({ interviewData, score = 88, isValentin
         <div className="flex items-center justify-between px-1">
           <div className="flex items-center gap-2">
             <MessageSquare className="w-5 h-5 text-gray-400" />
-            <h4 className="text-sm font-bold tracking-tight text-slate-700 uppercase">Transcripción de la Conversación</h4>
+            <h4 className="text-sm font-bold tracking-tight text-gray-700 uppercase">Transcripción de la Conversación</h4>
           </div>
           <Badge variant="secondary" className="text-[10px] font-medium text-gray-500">
             {transcript.length} Intervenciones
           </Badge>
         </div>
 
-        <div className="bg-slate-50 border border-slate-200 rounded-2xl overflow-hidden">
+        <div className="bg-gray-50 border border-gray-200 rounded-2xl overflow-hidden">
           <div className="p-6 space-y-6 max-h-[500px] overflow-y-auto custom-scrollbar">
             {transcript.map((msg, idx) => (
               <div key={idx} className={cn(
@@ -153,8 +153,8 @@ export function SerenaAIInterviewSection({ interviewData, score = 88, isValentin
                 <div className={cn(
                   "max-w-[85%] px-4 py-3 rounded-2xl text-sm leading-relaxed shadow-sm relative group",
                     msg.role === 'candidate' 
-                    ? "bg-white text-gray-800 border border-slate-200 rounded-tr-none" 
-                    : "bg-slate-100 text-gray-700 border border-slate-200 rounded-tl-none"
+                    ? "bg-white text-gray-800 border border-gray-200 rounded-tr-none" 
+                    : "bg-gray-100 text-gray-700 border border-gray-200 rounded-tl-none"
                 )}>
                   {msg.text}
                   {msg.role === 'candidate' && (
@@ -170,7 +170,7 @@ export function SerenaAIInterviewSection({ interviewData, score = 88, isValentin
               </div>
             ))}
           </div>
-          <div className="bg-white border-t border-slate-200 p-4 text-center">
+          <div className="bg-white border-t border-gray-200 p-4 text-center">
             <Button 
               variant="ghost" 
               size="sm" 
@@ -195,7 +195,7 @@ export function SerenaAIInterviewSection({ interviewData, score = 88, isValentin
         <div className="flex items-center justify-between px-1">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-5 h-5 text-gray-400" />
-            <h4 className="text-sm font-bold tracking-tight text-slate-700 uppercase">Feedback Consolidado</h4>
+            <h4 className="text-sm font-bold tracking-tight text-gray-700 uppercase">Feedback Consolidado</h4>
           </div>
           <Button 
             onClick={handleDownloadFeedback}

@@ -131,7 +131,7 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose }) => {
           onMouseEnter={handleInteraction}
           onFocus={handleInteraction}
           onClick={handleInteraction}
-          className="relative bg-white/95 rounded-[20px] w-[320px] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] border border-slate-200 overflow-hidden backdrop-blur-xl pointer-events-auto"
+          className="relative bg-white/95 rounded-[20px] w-[320px] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] border border-gray-200 overflow-hidden backdrop-blur-xl pointer-events-auto"
         >
           {/* Header Gradient */}
           <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 p-5 text-white relative">
@@ -152,18 +152,18 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose }) => {
 
           <div className="p-5">
             <div className="mb-5">
-              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Sección a evaluar</label>
+              <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Sección a evaluar</label>
               <div className="relative">
                 <select
                   value={selectedSection}
                   onChange={(e) => setSelectedSection(e.target.value)}
-                  className="w-full appearance-none bg-slate-50 border border-slate-100 rounded-xl p-3 pr-10 text-sm text-slate-700 font-bold focus:ring-4 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all cursor-pointer"
+                  className="w-full appearance-none bg-gray-50 border border-gray-100 rounded-xl p-3 pr-10 text-sm text-gray-700 font-bold focus:ring-4 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all cursor-pointer"
                 >
                   {SECTIONS.map((s) => (
                     <option key={s.id} value={s.id}>{s.label}</option>
                   ))}
                 </select>
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
                   <ChevronDown size={16} />
                 </div>
               </div>
@@ -172,26 +172,26 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose }) => {
 
 
             <div className="space-y-2">
-              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Compártenos tus comentarios</label>
+              <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest">Compártenos tus comentarios</label>
               <textarea
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
                 placeholder="¿Qué mejorarías?..."
-                className="w-full h-24 bg-slate-50 border border-slate-100 rounded-xl p-3 text-sm text-slate-700 placeholder:text-slate-400 focus:ring-4 focus:ring-blue-100 focus:border-blue-400 transition-all outline-none resize-none font-medium leading-relaxed"
+                className="w-full h-24 bg-gray-50 border border-gray-100 rounded-xl p-3 text-sm text-gray-700 placeholder:text-gray-400 focus:ring-4 focus:ring-blue-100 focus:border-blue-400 transition-all outline-none resize-none font-medium leading-relaxed"
               />
             </div>
 
             <div className="mt-5 flex gap-3">
               <button
                 onClick={onClose}
-                className="flex-1 py-3 rounded-xl font-black text-slate-400 hover:text-slate-600 transition-all uppercase tracking-widest text-[10px]"
+                className="flex-1 py-3 rounded-xl font-black text-gray-400 hover:text-gray-600 transition-all uppercase tracking-widest text-[10px]"
               >
                 Cerrar
               </button>
               <button
                 onClick={handleSubmit}
                 disabled={isSubmitting || !comment.trim()}
-                className="flex-[2] bg-slate-900 hover:bg-slate-800 disabled:opacity-50 disabled:hover:bg-slate-900 text-white font-black py-3 rounded-xl transition-all shadow-xl shadow-slate-200 flex items-center justify-center gap-2 uppercase tracking-widest text-[10px]"
+                className="flex-[2] bg-gray-900 hover:bg-gray-800 disabled:opacity-50 disabled:hover:bg-gray-900 text-white font-black py-3 rounded-xl transition-all shadow-xl shadow-gray-200 flex items-center justify-center gap-2 uppercase tracking-widest text-[10px]"
               >
                 {isSubmitting ? (
                   <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />

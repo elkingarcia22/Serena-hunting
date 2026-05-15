@@ -94,8 +94,8 @@ export function GeneralInfoSection({
       {!isEditMode && candidateData.description && (
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center">
-              <FileText className="w-5 h-5 text-slate-600" />
+            <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
+              <FileText className="w-5 h-5 text-gray-600" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900">Resumen Profesional</h3>
           </div>

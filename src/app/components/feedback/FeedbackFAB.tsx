@@ -37,7 +37,7 @@ const FeedbackFAB: React.FC<FeedbackFABProps> = ({ onClick }) => {
         >
           <div className="flex items-center gap-2">
             <Sparkles className="w-3.5 h-3.5 text-blue-500 animate-pulse" />
-            <p className="text-[11px] font-black tracking-tight text-slate-800 whitespace-nowrap uppercase">
+            <p className="text-[11px] font-black tracking-tight text-gray-800 whitespace-nowrap uppercase">
               Ayúdanos a mejorar V1
             </p>
           </div>

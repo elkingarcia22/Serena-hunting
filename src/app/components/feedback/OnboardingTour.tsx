@@ -166,7 +166,7 @@ const OnboardingTour: React.FC = () => {
     <div className="fixed inset-0 z-[10001] pointer-events-none">
       {/* Full Backdrop for Center Step */}
       <div 
-        className={`absolute inset-0 bg-slate-900/60 backdrop-blur-[2px] transition-opacity duration-300 ${isCenter ? 'opacity-100 z-[10002] pointer-events-auto' : 'opacity-0 -z-10 pointer-events-none'}`}
+        className={`absolute inset-0 bg-gray-900/60 backdrop-blur-[2px] transition-opacity duration-300 ${isCenter ? 'opacity-100 z-[10002] pointer-events-auto' : 'opacity-0 -z-10 pointer-events-none'}`}
       />
 
       {/* Spotlight Mask using box-shadow similar to NOM 035 */}
@@ -207,7 +207,7 @@ const OnboardingTour: React.FC = () => {
           className="absolute z-[10003] w-[380px] bg-white rounded-[24px] shadow-[0_20px_50px_rgba(0,0,0,0.3)] pointer-events-auto border border-white/50 overflow-hidden"
         >
           {/* Progress Bar Header */}
-          <div className="h-1.5 w-full bg-slate-100 flex">
+          <div className="h-1.5 w-full bg-gray-100 flex">
             {TOUR_STEPS.map((_, i) => (
               <div 
                 key={i} 
@@ -223,26 +223,26 @@ const OnboardingTour: React.FC = () => {
               </div>
               <div>
                 <span className="text-[10px] font-black uppercase tracking-tighter text-blue-600/60 block -mb-1">Paso {currentStep + 1} de {TOUR_STEPS.length}</span>
-                <h3 className="font-black text-xl text-slate-800 tracking-tight">{step.title}</h3>
+                <h3 className="font-black text-xl text-gray-800 tracking-tight">{step.title}</h3>
               </div>
               <button 
                 onClick={finishTour}
-                className="ml-auto w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-all border border-slate-100"
+                className="ml-auto w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-50 hover:text-gray-600 transition-all border border-gray-100"
               >
                 <X size={16} />
               </button>
             </div>
 
             <p 
-              className="text-slate-600 leading-relaxed mb-8 font-medium"
+              className="text-gray-600 leading-relaxed mb-8 font-medium"
               dangerouslySetInnerHTML={{ __html: step.content }}
             />
 
-            <div className="flex items-center justify-between pt-4 border-t border-slate-50">
+            <div className="flex items-center justify-between pt-4 border-t border-gray-50">
               <button
                 onClick={prevStep}
                 disabled={currentStep === 0}
-                className={`flex items-center gap-2 font-bold px-3 py-2 rounded-xl transition-all ${currentStep === 0 ? 'opacity-0' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
+                className={`flex items-center gap-2 font-bold px-3 py-2 rounded-xl transition-all ${currentStep === 0 ? 'opacity-0' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}
               >
                 <ChevronLeft size={20} />
                 <span>Atrás</span>
@@ -252,7 +252,7 @@ const OnboardingTour: React.FC = () => {
               {currentStep !== 1 && (
                 <button
                   onClick={currentStep === TOUR_STEPS.length - 1 ? finishTour : nextStep}
-                  className="flex items-center gap-3 bg-slate-900 group text-white pl-6 pr-4 py-3 rounded-2xl font-black shadow-xl shadow-slate-200 hover:bg-slate-800 transition-all active:scale-95"
+                  className="flex items-center gap-3 bg-gray-900 group text-white pl-6 pr-4 py-3 rounded-2xl font-black shadow-xl shadow-gray-200 hover:bg-gray-800 transition-all active:scale-95"
                 >
                   <span>{currentStep === TOUR_STEPS.length - 1 ? 'Finalizar' : 'Continuar'}</span>
                   <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />

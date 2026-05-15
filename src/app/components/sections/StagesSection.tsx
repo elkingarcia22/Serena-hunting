@@ -577,7 +577,7 @@ export function StagesSection({
     <div className="space-y-4">
       {/* Match Score Card */}
       {activeApplication && (
-        <div className="bg-gradient-to-br from-slate-50 to-blue-50 rounded-xl border border-slate-200 p-6 mb-6">
+        <div className="bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl border border-gray-200 p-6 mb-6">
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-lg bg-blue-600 flex items-center justify-center shadow-md shadow-blue-100">
@@ -600,7 +600,7 @@ export function StagesSection({
           <div className="flex items-center gap-4">
             <div className="flex-1 bg-white rounded-full h-4 shadow-inner border border-gray-100">
               <div
-                className="bg-gradient-to-r from-slate-600 to-blue-600 h-4 rounded-full transition-all duration-1000 flex items-center justify-end pr-2"
+                className="bg-gradient-to-r from-gray-600 to-blue-600 h-4 rounded-full transition-all duration-1000 flex items-center justify-end pr-2"
                 style={{ width: `${activeApplication.matchScore || 0}%` }}
               >
                 {(activeApplication.matchScore || 0) >= 20 && (

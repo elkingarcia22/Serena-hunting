@@ -5,6 +5,7 @@ import WelcomeOverlay from './components/feedback/WelcomeOverlay';
 import OnboardingTour from './components/feedback/OnboardingTour';
 import FeedbackFAB from './components/feedback/FeedbackFAB';
 import FeedbackModal from './components/feedback/FeedbackModal';
+import { Toaster } from './components/ui/sonner';
 
 function OnboardingManager() {
   const { isFeedbackModalOpen, closeFeedback } = useOnboarding();
@@ -23,6 +24,7 @@ export default function App() {
     <OnboardingProvider>
       <RouterProvider router={router} />
       <OnboardingManager />
+      <Toaster position="top-right" />
     </OnboardingProvider>
   );
 }

@@ -113,7 +113,7 @@ export function CandidateHeader({
             {/* Avatar with Ring */}
             <div className="relative flex-shrink-0">
               <Avatar className="w-16 h-16 ring-4 ring-white shadow-md">
-                <div className="w-full h-full bg-gradient-to-br from-slate-600 to-blue-600 flex items-center justify-center text-white text-xl font-semibold">
+                <div className="w-full h-full bg-gradient-to-br from-gray-600 to-blue-600 flex items-center justify-center text-white text-xl font-semibold">
                   {candidate.name
                     .split(' ')
                     .map((n) => n.charAt(0))

@@ -88,12 +88,12 @@ export function PsychometricSection({ evaluation, isValentina }: PsychometricSec
       
       {/* Header — Patrón Serena IA */}
       <div className="flex items-center gap-4 pb-6 border-b border-gray-100/80">
-        <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-500 border border-slate-100 shadow-sm">
+        <div className="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center text-gray-500 border border-gray-100 shadow-sm">
           <Brain className="w-6 h-6" />
         </div>
         <div>
-          <h4 className="text-lg font-black text-slate-900 tracking-tight">Evaluación Psicométrica</h4>
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-0.5">Evaluado por Serena IA</p>
+          <h4 className="text-lg font-black text-gray-900 tracking-tight">Evaluación Psicométrica</h4>
+          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-0.5">Evaluado por Serena IA</p>
         </div>
       </div>
 
@@ -112,19 +112,19 @@ export function PsychometricSection({ evaluation, isValentina }: PsychometricSec
         {/* CI y CA integrados en la lista */}
         <li className="flex items-start gap-3">
           <span className="mt-2 w-2 h-2 rounded-full bg-blue-500 flex-shrink-0 shadow-sm shadow-blue-100" />
-          <p className="text-[14px] text-slate-600 leading-relaxed font-medium">
-            <strong className="text-slate-900 font-bold">{evaluation.iq}.</strong> Capacidad cognitiva destacada para resolver problemas complejos.
+          <p className="text-[14px] text-gray-600 leading-relaxed font-medium">
+            <strong className="text-gray-900 font-bold">{evaluation.iq}.</strong> Capacidad cognitiva destacada para resolver problemas complejos.
           </p>
         </li>
         <li className="flex items-start gap-3">
           <span className="mt-2 w-2 h-2 rounded-full bg-purple-500 flex-shrink-0 shadow-sm shadow-purple-100" />
-          <p className="text-[14px] text-slate-600 leading-relaxed font-medium">
-            <strong className="text-slate-900 font-bold">{evaluation.learningQuotient}.</strong> Alta velocidad y efectividad en la adquisición de nuevos conocimientos.
+          <p className="text-[14px] text-gray-600 leading-relaxed font-medium">
+            <strong className="text-gray-900 font-bold">{evaluation.learningQuotient}.</strong> Alta velocidad y efectividad en la adquisición de nuevos conocimientos.
           </p>
         </li>
 
         <li className="pt-4">
-          <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-6">Factores destacados</h5>
+          <h5 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-6">Factores destacados</h5>
           <ul className="space-y-5">
             {/* Factores Detallados */}
             {evaluation.factors.map((factor, idx) => (
@@ -133,8 +133,8 @@ export function PsychometricSection({ evaluation, isValentina }: PsychometricSec
                   factor.status === 'pass' ? 'bg-emerald-500 shadow-emerald-100' : 
                   factor.status === 'warning' ? 'bg-amber-500 shadow-amber-100' : 'bg-rose-500 shadow-rose-100'
                 )} />
-                <p className="text-[14px] text-slate-600 leading-relaxed font-medium">
-                  <strong className="text-slate-900 font-bold">{factor.label}:</strong>{' '}
+                <p className="text-[14px] text-gray-600 leading-relaxed font-medium">
+                  <strong className="text-gray-900 font-bold">{factor.label}:</strong>{' '}
                   {factor.description}
                 </p>
               </li>
@@ -143,8 +143,8 @@ export function PsychometricSection({ evaluation, isValentina }: PsychometricSec
             {/* Dominancia Cerebral */}
             <li className="flex items-start gap-3">
               <span className="mt-2 w-2 h-2 rounded-full bg-amber-500 flex-shrink-0 shadow-sm shadow-amber-100" />
-              <p className="text-[14px] text-slate-600 leading-relaxed font-medium">
-                <strong className="text-slate-900 font-bold">Dominancia Cerebral:</strong>{' '}
+              <p className="text-[14px] text-gray-600 leading-relaxed font-medium">
+                <strong className="text-gray-900 font-bold">Dominancia Cerebral:</strong>{' '}
                 {evaluation.brainDominance}
               </p>
             </li>
@@ -153,42 +153,42 @@ export function PsychometricSection({ evaluation, isValentina }: PsychometricSec
       </ul>
 
       {/* Observación de Especialista */}
-      <div className="space-y-4 pt-6 border-t border-slate-50">
-        <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
+      <div className="space-y-4 pt-6 border-t border-gray-50">
+        <h5 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] flex items-center gap-2">
           <Info className="w-3.5 h-3.5" /> OBSERVACIÓN GENERAL
         </h5>
-        <p className="text-[15px] text-slate-700 leading-relaxed italic font-medium">
+        <p className="text-[15px] text-gray-700 leading-relaxed italic font-medium">
           "{evaluation.observation}"
         </p>
       </div>
 
       {/* Reportes Generados — Vertical */}
       <div className="space-y-4 pt-6">
-        <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Descargas Disponibles</h5>
+        <h5 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Descargas Disponibles</h5>
         <div className="grid grid-cols-1 gap-3">
           {reports.map((report) => (
             <button 
               key={report.name}
               onClick={() => handleDownload(report.name)}
-              className="flex items-center justify-between p-4 bg-slate-50/50 border border-slate-100 rounded-2xl hover:bg-slate-100/80 transition-all group"
+              className="flex items-center justify-between p-4 bg-gray-50 border border-gray-100 rounded-2xl hover:bg-gray-100/80 transition-all group"
             >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-slate-400 border border-slate-100 shadow-sm group-hover:scale-105 transition-transform">
+                <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-gray-400 border border-gray-100 shadow-sm group-hover:scale-105 transition-transform">
                   <FileText className="w-5 h-5" />
                 </div>
                 <div className="text-left">
-                  <div className="text-xs font-bold text-slate-900">{report.name}</div>
-                  <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">{report.type} • {report.date}</div>
+                  <div className="text-xs font-bold text-gray-900">{report.name}</div>
+                  <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-0.5">{report.type} • {report.date}</div>
                 </div>
               </div>
-              <Download className="w-4 h-4 text-slate-300 group-hover:text-slate-600 transition-colors" />
+              <Download className="w-4 h-4 text-gray-300 group-hover:text-gray-600 transition-colors" />
             </button>
           ))}
         </div>
       </div>
 
       {/* Footer / Decisión */}
-      <div className="pt-8 border-t border-slate-50">
+      <div className="pt-8 border-t border-gray-50">
         <span className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-50/50 border border-emerald-100 rounded-full text-[11px] text-emerald-700 font-black uppercase tracking-widest shadow-sm">
           {decision}
         </span>

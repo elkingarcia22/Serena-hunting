@@ -31,11 +31,11 @@ export function SerenaCopilotCard({
   const confidenceStyle = confidenceConfig[confidence] || confidenceConfig.high;
 
   return (
-    <div className="bg-gradient-to-br from-slate-50 to-blue-50 rounded-lg p-4 border border-slate-200 space-y-4">
+    <div className="bg-gradient-to-br from-gray-50 to-blue-50 rounded-lg p-4 border border-gray-200 space-y-4">
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-700 to-blue-700 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-700 to-blue-700 flex items-center justify-center">
             <Sparkles className="w-4 h-4 text-white" />
           </div>
           <div>
@@ -78,7 +78,7 @@ export function SerenaCopilotCard({
       </div>
 
       {/* Guardrails */}
-      <div className="flex items-center justify-center gap-4 pt-2 border-t border-slate-200">
+      <div className="flex items-center justify-center gap-4 pt-2 border-t border-gray-200">
         <button className="text-xs text-gray-600 hover:text-gray-900 flex items-center gap-1">
           <AlertCircle className="w-3 h-3" />
           ¿Por qué esto?

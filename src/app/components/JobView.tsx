@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { toast } from 'sonner';
 import { 
   Search, 
   ChevronDown, 
@@ -14,7 +15,21 @@ import {
   Link as LinkIcon,
   ArrowLeft,
   Upload,
-  Users
+  Users,
+  Filter,
+  Download,
+  Copy,
+  MessageCircle,
+  Mail,
+  Plus,
+  ArrowRight,
+  Layers,
+  FastForward,
+  ShieldCheck,
+  Phone,
+  FileText,
+  Printer,
+  Check
 } from 'lucide-react';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
@@ -24,11 +39,16 @@ import { SerenaIAPanel } from './SerenaIAPanel';
 import { candidatesData } from '../data/candidatesData';
 import { cn } from './ui/utils';
 import { Button } from './ui/button';
+import { Drawer } from './ui/drawer';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
   DropdownMenuItem, 
-  DropdownMenuTrigger 
+  DropdownMenuTrigger,
+  DropdownMenuPortal,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent
 } from './ui/dropdown-menu';
 import {
   Dialog,
@@ -57,8 +77,114 @@ export function JobView({ onCandidateClick }: { onCandidateClick: (id: string) =
   const [activeTab, setActiveTab] = useState<'info' | 'candidates' | 'cvs'>('cvs');
   const [searchQuery, setSearchQuery] = useState('');
   const [isSerenaOpen, setIsSerenaOpen] = useState(false);
+  const [searchTrigger, setSearchTrigger] = useState(0);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [hasAcceptedTerms, setHasAcceptedTerms] = useState(false);
+  const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
+  const [filterOrigin, setFilterOrigin] = useState('all');
+  const [filterStage, setFilterStage] = useState('all');
+  const [filterStatus, setFilterStatus] = useState('active');
+  const [serenaMode, setSerenaMode] = useState<'global' | 'search'>('global');
+
+  // Debug Refs
+  const rootRef = React.useRef<HTMLDivElement>(null);
+  const headerRef = React.useRef<HTMLDivElement>(null);
+  const contentRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    console.log('[JobView] Component Mounted');
+    console.log('[JobView] Active Tab:', activeTab);
+    console.log('[JobView] Candidates Data Length:', candidatesData.length);
+    
+    const checkLayout = () => {
+      if (rootRef.current) {
+        const rect = rootRef.current.getBoundingClientRect();
+        console.log('[JobView] Root Dimensions:', { width: rect.width, height: rect.height });
+      }
+      if (headerRef.current) {
+        console.log('[JobView] Header Height:', headerRef.current.offsetHeight);
+      }
+      if (contentRef.current) {
+        console.log('[JobView] Content Height:', contentRef.current.offsetHeight);
+      }
+    };
+
+    checkLayout();
+    window.addEventListener('resize', checkLayout);
+    return () => window.removeEventListener('resize', checkLayout);
+  }, []);
+
+  React.useEffect(() => {
+    console.log('[JobView] State Update - Tab:', activeTab, 'Serena:', isSerenaOpen);
+  }, [activeTab, isSerenaOpen]);
+
+  const activeFiltersCount = [
+    filterOrigin !== 'all',
+    filterStage !== 'all',
+    filterStatus !== 'active'
+  ].filter(Boolean).length;
+
+  const [candidatesList, setCandidatesList] = useState<any[]>(
+    candidatesData.map((c, idx) => {
+      let status = c.applications?.[0]?.status || 'active';
+      if (idx % 4 === 0) status = 'action_required';
+      
+      return {
+        ...c,
+        origin: idx % 3 === 0 ? 'Importado por CV' : (idx % 3 === 1 ? 'Serena IA' : 'Vacante'),
+        stage: stages.find(s => s.id === c.applications?.[0]?.currentStage)?.name || 'Sourcing',
+        status: status,
+        identification: `1.0${idx}4.56${idx}.789`,
+        phone: `+57 31${idx} 456 7890`
+      };
+    })
+  );
+
+  const filteredCandidates = candidatesList.filter(candidate => {
+    // Search query filter
+    const matchesSearch = candidate.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         candidate.identification?.includes(searchQuery) ||
+                         candidate.phone?.includes(searchQuery);
+    
+    // Origin filter
+    const matchesOrigin = filterOrigin === 'all' || 
+                         (filterOrigin === 'serena' && candidate.origin === 'Serena IA') ||
+                         (filterOrigin === 'vacante' && candidate.origin === 'Vacante') ||
+                         (filterOrigin === 'cv' && candidate.origin === 'Importado por CV');
+
+    // Stage filter
+    const matchesStage = filterStage === 'all' || 
+                        candidate.stage === stages.find(s => s.id === filterStage)?.name;
+
+    // Status filter
+    const matchesStatus = filterStatus === 'all' || 
+                         (filterStatus === 'active' && (candidate.status === 'active' || candidate.status === 'hired')) ||
+                         (filterStatus === 'action_required' && candidate.status === 'action_required') ||
+                         (filterStatus === 'on_hold' && candidate.status === 'on_hold') ||
+                         (filterStatus === 'rejected' && candidate.status === 'rejected');
+
+    return matchesSearch && matchesOrigin && matchesStage && matchesStatus;
+  });
+
+  const handleCopy = (e: React.MouseEvent, text: string, label: string) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(text);
+    toast.success(`${label} copiado`);
+  };
+
+  const handleImportCandidate = (candidate: any) => {
+    console.log("Importando candidato:", candidate);
+    setCandidatesList(prev => {
+      if (prev.some(c => c.name === candidate.name)) return prev;
+      return [...prev, { 
+        ...candidate, 
+        id: (prev.length + 1).toString(),
+        origin: 'Serena IA',
+        stage: 'Sourcing',
+        status: 'active'
+      }];
+    });
+  };
   const [expandedSections, setExpandedSections] = useState<Record<string, { active: boolean; discarded: boolean }>>({
     'screening-talent': { active: true, discarded: false },
     'evaluacion-cv': { active: true, discarded: false },
@@ -121,191 +247,193 @@ export function JobView({ onCandidateClick }: { onCandidateClick: (id: string) =
           )}>
             {app.status === 'hired' ? 'Contratado' : app.status === 'rejected' ? 'Descartado' : 'En proceso'}
           </Badge>
-          <span className="text-[10px] text-gray-400 uppercase font-bold">Hace {daysSinceApplied}d</span>
+          <span className="text-[9px] text-gray-400 font-medium">Hace {daysSinceApplied}d</span>
         </div>
       </div>
     );
   };
 
   return (
-    <div className="h-screen flex flex-col bg-slate-50/50 overflow-hidden font-sans">
-      {/* Premium Command Hub Header */}
-      <div className="bg-white border-b border-slate-200/60 shadow-sm z-10">
+    <>
+      <div ref={rootRef} className="h-screen flex flex-col bg-gray-50 overflow-hidden font-sans">
+      <div ref={headerRef} className="z-10 flex-shrink-0">
         <div className="max-w-[1600px] mx-auto px-8 pt-6">
           
           {/* Layer 1: Context & Navigation */}
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-slate-100 text-slate-400">
-                <ArrowLeft className="w-4 h-4" />
-              </Button>
-              <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                <span>Reclutamiento</span>
-                <span className="text-slate-300">/</span>
-                <span className="text-blue-600">Vacantes</span>
-              </div>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2 text-[11px] font-medium text-gray-400">
+              <span className="hover:text-gray-600 cursor-pointer transition-colors">Reclutamiento</span>
+              <span className="text-gray-200">/</span>
+              <span className="text-blue-600">Vacante</span>
             </div>
           </div>
 
           {/* Layer 2: Main Title & Hero Actions */}
-          <div className="flex items-end justify-between mb-8">
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-4">
-                <h1 className="text-4xl font-black text-slate-900 tracking-tight">
-                  Desarrollador Golang
-                </h1>
-                <div className="flex items-center gap-2">
-                  <Badge className="bg-green-500/10 text-green-600 border-green-500/20 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider flex items-center gap-1.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                    Publicada
-                  </Badge>
-                  <Badge variant="outline" className="bg-slate-50 text-slate-500 border-slate-200 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider flex items-center gap-1.5">
-                    <Eye className="w-3 h-3" /> Pública
-                  </Badge>
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-6">
+              <Button variant="outline" size="icon" className="h-11 w-11 border-gray-200 text-gray-600 hover:bg-gray-50 bg-transparent transition-all rounded-xl">
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-4">
+                  <h1 className="text-3xl font-semibold text-gray-900 tracking-tight">
+                    Desarrollador Golang
+                  </h1>
+                  <div className="flex items-center gap-2">
+                    <Badge className="bg-emerald-50 text-emerald-600 border-none text-[10px] px-3 py-1 rounded-full font-semibold flex items-center gap-1.5">
+                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      Publicada
+                    </Badge>
+                  </div>
                 </div>
               </div>
             </div>
 
             <div className="flex items-center gap-3">
-              <Tooltip content={isSerenaOpen ? "Cerrar Asistente" : "Abrir Serena IA"}>
-                <button 
-                  onClick={() => setIsSerenaOpen(!isSerenaOpen)}
+                <Button 
+                  onClick={() => {
+                    setSerenaMode('global');
+                    setIsSerenaOpen(!isSerenaOpen);
+                  }}
                   className={cn(
-                    "flex items-center gap-3 px-6 py-3 rounded-xl transition-all shadow-lg group active:scale-95",
+                    "h-11 px-6 rounded-full font-semibold text-xs transition-all flex items-center gap-2 shadow-lg",
                     isSerenaOpen 
-                      ? "bg-slate-900 text-white shadow-slate-200" 
-                      : "bg-gradient-to-r from-blue-600 via-indigo-600 to-fuchsia-600 text-white hover:scale-105 shadow-md shadow-indigo-100"
+                      ? "bg-gray-100 text-gray-600 hover:bg-gray-200" 
+                      : "bg-gradient-to-r from-blue-600 via-indigo-600 to-fuchsia-600 text-white hover:scale-105 shadow-indigo-100"
                   )}
                 >
                   <Sparkles className={cn("w-4 h-4", !isSerenaOpen && "animate-pulse")} />
-                  <span className="text-xs font-bold uppercase tracking-widest">
-                    {isSerenaOpen ? 'Cerrar Serena' : 'Consultar Serena IA'}
-                  </span>
-                </button>
-              </Tooltip>
+                  {isSerenaOpen ? 'Cerrar' : 'Serena IA'}
+                </Button>
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <div className="p-[2px] bg-gradient-to-r from-blue-600 via-indigo-600 to-fuchsia-600 rounded-xl group transition-all hover:shadow-lg hover:shadow-indigo-100">
-                    <Button variant="ghost" className="bg-white hover:bg-slate-50/50 text-slate-600 font-bold text-[11px] uppercase tracking-wider h-[40px] px-6 transition-all rounded-[10px] flex items-center gap-2 relative overflow-hidden w-full">
+                  <div className="p-[2px] bg-gradient-to-r from-blue-600 via-indigo-600 to-fuchsia-600 rounded-full group transition-all hover:shadow-lg hover:shadow-indigo-100">
+                    <Button variant="ghost" className="bg-white hover:bg-gray-50/50 text-gray-600 font-semibold text-[11px] h-[40px] px-6 transition-all rounded-full flex items-center gap-2 relative overflow-hidden w-full">
                       <Sparkles className="w-4 h-4 text-blue-500" />
                       <span>Importar candidatos</span>
-                      <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                      <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
                     </Button>
                   </div>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-72 p-2 rounded-2xl shadow-2xl border-slate-100 bg-white/95 backdrop-blur-sm">
-                  <DropdownMenuItem className="flex items-start gap-3 p-3 cursor-pointer rounded-xl hover:bg-blue-50 transition-colors group">
-                    <div className="w-10 h-10 rounded-lg bg-blue-100/50 flex items-center justify-center flex-shrink-0 group-hover:bg-white group-hover:shadow-sm transition-all">
-                      <Sparkles className="w-5 h-5 text-blue-600 animate-pulse" />
+                <DropdownMenuContent align="end" className="w-80 p-2 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] border-gray-100 bg-white">
+                  <DropdownMenuItem 
+                    onClick={() => {
+                      setSerenaMode('search');
+                      setIsSerenaOpen(true);
+                      setSearchTrigger(prev => prev + 1);
+                    }}
+                    className="flex items-start gap-3.5 p-3.5 cursor-pointer rounded-xl hover:bg-gray-50 transition-all group outline-none"
+                  >
+                    <div className="w-11 h-11 rounded-xl bg-gray-50 flex items-center justify-center flex-shrink-0 group-hover:bg-white group-hover:shadow-sm transition-all border border-transparent group-hover:border-gray-100">
+                      <Search className="w-5 h-5 text-gray-400 group-hover:text-blue-600 transition-colors" />
                     </div>
-                    <div className="flex flex-col gap-0.5">
-                      <span className="text-sm font-bold text-blue-600">Búsqueda Inteligente</span>
-                      <p className="text-[10px] text-blue-400 font-medium leading-tight">Encuentra perfiles ideales automáticamente.</p>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-sm font-semibold text-gray-900 group-hover:text-blue-600 transition-colors flex items-center gap-2">
+                        Búsqueda Inteligente
+                        <Sparkles className="w-3.5 h-3.5 text-blue-500 animate-pulse" />
+                      </span>
+                      <p className="text-xs text-gray-500 leading-snug">Encuentra perfiles ideales automáticamente en tu base de datos.</p>
                     </div>
                   </DropdownMenuItem>
 
-                  <div className="h-px bg-slate-100 my-1 mx-2" />
+                  <div className="h-px bg-gray-100 my-1 mx-2" />
 
                   <DropdownMenuItem 
                     onClick={() => setIsImportModalOpen(true)}
-                    className="flex items-start gap-3 p-3 cursor-pointer rounded-xl hover:bg-slate-50 transition-colors group"
+                    className="flex items-start gap-3.5 p-3.5 cursor-pointer rounded-xl hover:bg-gray-50 transition-all group outline-none"
                   >
-                    <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0 group-hover:bg-white group-hover:shadow-sm transition-all">
-                      <Upload className="w-5 h-5 text-slate-500" />
+                    <div className="w-11 h-11 rounded-xl bg-gray-50 flex items-center justify-center flex-shrink-0 group-hover:bg-white group-hover:shadow-sm transition-all border border-transparent group-hover:border-gray-100">
+                      <Upload className="w-5 h-5 text-gray-400 group-hover:text-gray-900 transition-colors" />
                     </div>
-                    <div className="flex flex-col gap-0.5">
-                      <span className="text-sm font-bold text-slate-700">Cargar archivos</span>
-                      <p className="text-[10px] text-slate-400 font-medium leading-tight">Sube archivos en formato PDF o ZIP.</p>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-sm font-semibold text-gray-900 group-hover:text-gray-600 transition-colors">Importar CV</span>
+                      <p className="text-xs text-gray-500 leading-snug">Sube hojas de vida en formato PDF o carpetas ZIP.</p>
                     </div>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              <Button variant="outline" size="icon" className="h-11 w-11 border-slate-200 text-slate-600 hover:bg-slate-50 transition-all rounded-xl">
-                <LinkIcon className="w-4 h-4" />
-              </Button>
+              <Tooltip content="Ir a la vacante">
+                <Button variant="outline" size="icon" className="h-11 w-11 border-gray-200 text-gray-600 hover:bg-gray-50 bg-transparent transition-all rounded-xl">
+                  <LinkIcon className="w-4 h-4" />
+                </Button>
+              </Tooltip>
 
-              <Button variant="outline" size="icon" className="h-11 w-11 border-slate-200 text-slate-600 hover:bg-slate-50 transition-all rounded-xl">
-                <Pencil className="w-4 h-4" />
-              </Button>
+              <Tooltip content="Editar vacante">
+                <Button variant="outline" size="icon" className="h-11 w-11 border-gray-200 text-gray-600 hover:bg-gray-50 bg-transparent transition-all rounded-xl">
+                  <Pencil className="w-4 h-4" />
+                </Button>
+              </Tooltip>
 
-              <Button variant="outline" size="icon" className="h-11 w-11 border-slate-200 text-red-500 hover:bg-red-50 hover:border-red-100 transition-all rounded-xl">
-                <Trash2 className="w-4 h-4" />
-              </Button>
+              <Tooltip content="Eliminar vacante">
+                <Button variant="outline" size="icon" className="h-11 w-11 border-gray-200 text-red-500 hover:bg-red-50 hover:border-red-100 bg-transparent transition-all rounded-xl">
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </Tooltip>
             </div>
           </div>
 
           {/* Layer 3: Stats Cards (Bento style) */}
           <div className="grid grid-cols-4 gap-4 mb-8">
-            <div className="bg-slate-50/50 border border-slate-100 p-4 rounded-2xl flex flex-col justify-between">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Candidatos Totales</span>
+            <div className="bg-white border border-gray-100 p-4 rounded-2xl flex flex-col justify-between">
+              <span className="text-[11px] font-medium text-gray-500">Candidatos totales</span>
               <div className="flex items-baseline gap-2 mt-2">
-                <span className="text-3xl font-black text-slate-900">32</span>
+                <span className="text-3xl font-semibold text-gray-900">32</span>
               </div>
             </div>
             
-            <div className="bg-slate-50/50 border border-slate-100 p-4 rounded-2xl flex flex-col justify-between">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Nuevos (Semana)</span>
+            <div className="bg-white border border-gray-100 p-4 rounded-2xl flex flex-col justify-between">
+              <span className="text-[11px] font-medium text-gray-500">Nuevos (Semana)</span>
               <div className="flex items-baseline gap-2 mt-2">
-                <span className="text-3xl font-black text-slate-900">0</span>
-                <span className="text-[10px] font-bold text-slate-400">Sin cambios</span>
+                <span className="text-3xl font-semibold text-gray-900">0</span>
+                <span className="text-[10px] font-semibold text-gray-400">Sin cambios</span>
               </div>
             </div>
 
-            <div className="bg-slate-50/50 border border-slate-100 p-4 rounded-2xl">
+            <div className="bg-white border border-gray-100 p-4 rounded-2xl">
               <div className="flex justify-between items-center mb-3">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Entrevistas</span>
-                <span className="text-[11px] font-black text-slate-700">48/80</span>
+                <span className="text-[11px] font-medium text-gray-500">Entrevistas</span>
+                <span className="text-[11px] font-semibold text-gray-700">48/80</span>
               </div>
-              <div className="h-2 w-full bg-slate-200/50 rounded-full overflow-hidden">
+              <div className="h-2 w-full bg-gray-200/50 rounded-full overflow-hidden">
                 <div className="h-full bg-blue-600 rounded-full w-[60%] shadow-[0_0_8px_rgba(37,99,235,0.4)]" />
               </div>
             </div>
 
-            <div className="bg-slate-50/50 border border-slate-100 p-4 rounded-2xl">
+            <div className="bg-white border border-gray-100 p-4 rounded-2xl">
               <div className="flex justify-between items-center mb-3">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Psicométricas</span>
-                <span className="text-[11px] font-black text-slate-700">28/60</span>
+                <span className="text-[11px] font-medium text-gray-500">Psicométricas</span>
+                <span className="text-[11px] font-semibold text-gray-700">28/60</span>
               </div>
-              <div className="h-2 w-full bg-slate-200/50 rounded-full overflow-hidden">
+              <div className="h-2 w-full bg-gray-200/50 rounded-full overflow-hidden">
                 <div className="h-full bg-indigo-600 rounded-full w-[47%] shadow-[0_0_8px_rgba(79,70,229,0.4)]" />
               </div>
             </div>
           </div>
 
-          {/* Layer 4: Navigation Tabs */}
-          <div className="flex gap-1">
+          {/* Layer 4: Modern Segmented Navigation Tabs */}
+          <div className="flex mb-4 bg-gray-100 p-1 rounded-full w-fit border border-gray-200/40">
             {['Info Vacante', 'Pipeline de Selección', 'Candidatos de la vacante'].map((tab) => {
               const isTabActive = (tab === 'Info Vacante' && activeTab === 'info') || 
                                  (tab === 'Pipeline de Selección' && activeTab === 'candidates') ||
                                  (tab === 'Candidatos de la vacante' && activeTab === 'cvs');
               const tabKey = tab === 'Info Vacante' ? 'info' : tab === 'Pipeline de Selección' ? 'candidates' : 'cvs';
-              const isDisabled = tab === 'Info Vacante' || tab === 'Pipeline de Selección';
               
               return (
                 <button
                   key={tab}
-                  onClick={() => !isDisabled && setActiveTab(tabKey as any)}
-                  disabled={isDisabled}
+                  disabled={tabKey !== 'cvs'}
+                  onClick={() => tabKey === 'cvs' && setActiveTab(tabKey as any)}
                   className={cn(
-                    "pb-4 pt-2 text-[11px] font-bold transition-all px-6 relative group",
+                    "relative px-6 py-2 rounded-full text-[11px] font-semibold transition-all duration-300 flex items-center gap-2",
                     isTabActive 
-                      ? "text-blue-600" 
-                      : isDisabled 
-                        ? "text-slate-300 cursor-not-allowed" 
-                        : "text-slate-400 hover:text-slate-600"
+                      ? "bg-white text-blue-600 shadow-sm ring-1 ring-gray-200/20" 
+                      : "text-gray-400 cursor-not-allowed opacity-60"
                   )}
                 >
-                  <span className={cn(
-                    "relative z-10 transition-transform duration-200",
-                    isTabActive ? "scale-105" : !isDisabled && "group-hover:translate-y-[-1px]"
-                  )}>
-                    {tab}
-                  </span>
-                  {isTabActive && (
-                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-blue-600 rounded-t-full shadow-[0_-2px_8px_rgba(37,99,235,0.3)]" />
-                  )}
+                  {isTabActive && <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />}
+                  {tab}
                 </button>
               );
             })}
@@ -313,93 +441,313 @@ export function JobView({ onCandidateClick }: { onCandidateClick: (id: string) =
         </div>
       </div>
 
-      {/* Import Modal */}
-      <Dialog open={isImportModalOpen} onOpenChange={setIsImportModalOpen}>
-        <DialogContent className="max-w-2xl p-0 overflow-hidden rounded-[32px] border-none shadow-[0_32px_64px_-12px_rgba(0,0,0,0.14)] bg-white">
-          <DialogHeader className="px-10 pt-10 pb-0 flex flex-row items-center justify-between border-none">
-            <DialogTitle className="text-[22px] font-black text-slate-900 tracking-tight">Importar CVs</DialogTitle>
-          </DialogHeader>
-          
-          <div className="px-10 py-12 flex flex-col items-center">
-            {/* Upload Zone Proposal */}
-            <div className="w-full border-2 border-dashed border-slate-100 rounded-[24px] bg-slate-50/30 p-10 mb-8 flex flex-col items-center group cursor-pointer hover:border-blue-200 hover:bg-blue-50/30 transition-all">
-              <div className="w-16 h-16 rounded-2xl bg-white shadow-sm border border-slate-100 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <Upload className="w-8 h-8 text-blue-500" />
-              </div>
-              <h3 className="text-lg font-bold text-slate-800 mb-1">Puedes subir archivos en formato PDF o ZIP.</h3>
-              <p className="text-sm text-slate-400 font-medium">
-                Si el archivo es ZIP, solo se tendrán en cuenta los PDF incluidos.
-              </p>
-            </div>
-
-            {/* Legal Terms Card */}
-            <div className="flex items-start gap-5 p-7 bg-[#F8FAFC] rounded-[24px] border border-[#F1F5F9] text-left w-full transition-all hover:shadow-sm">
-              <Checkbox 
-                id="terms" 
-                checked={hasAcceptedTerms}
-                onCheckedChange={(checked) => setHasAcceptedTerms(checked as boolean)}
-                className="mt-1 h-6 w-6 rounded-lg border-slate-200 bg-white data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 transition-all shadow-sm"
-              />
-              <div className="flex-1">
-                <Label htmlFor="terms" className="text-[11px] text-slate-500 leading-[1.6] font-semibold cursor-pointer block">
-                  “Al cargar información en el módulo de reclutamiento, el Cliente declara contar con las autorizaciones necesarias para el tratamiento de los datos suministrados, actuando como Responsable del tratamiento. UBITS actúa como Encargado, tratando dicha información conforme a las instrucciones del Cliente 
-                  <span className="text-blue-600 font-bold ml-1 hover:underline">Política de Tratamiento de Datos y los Términos y Condiciones de UBITS.</span>”
-                </Label>
-              </div>
-            </div>
-          </div>
-
-          <DialogFooter className="px-10 pb-10 pt-0 bg-transparent gap-4 flex items-center justify-center sm:justify-center">
-            <Button 
-              variant="outline" 
-              onClick={() => setIsImportModalOpen(false)}
-              className="px-12 h-[52px] rounded-2xl font-bold text-slate-500 border-slate-200 hover:bg-slate-50 transition-all text-sm"
-            >
-              Cancelar
-            </Button>
-            <Button 
-              disabled={!hasAcceptedTerms}
-              className={cn(
-                "px-14 h-[52px] rounded-2xl font-bold transition-all text-sm shadow-xl",
-                hasAcceptedTerms 
-                  ? "bg-slate-900 text-white hover:bg-slate-800 shadow-slate-200" 
-                  : "bg-[#E2E8F0] text-white cursor-not-allowed shadow-none"
-              )}
-            >
-              Aceptar
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div ref={contentRef} className="flex-1 flex flex-row overflow-hidden">
         {activeTab === 'cvs' && (
-          <div className="flex-1 flex flex-col items-center justify-center text-gray-500 bg-white">
-            <div className="p-8 border-2 border-dashed border-gray-200 rounded-xl max-w-md text-center">
-              <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Users className="w-8 h-8" />
+          <div className="flex-1 flex flex-col overflow-hidden bg-gray-50 items-center">
+            {/* Table View - Hidden if no candidates */}
+            <div className={cn(
+              "flex-1 w-full max-w-[1600px] flex flex-col overflow-hidden px-8 py-6 gap-6",
+              candidatesList.length === 0 && "hidden"
+            )}>
+              {/* Table Header / Filters */}
+              <div className="flex flex-col gap-4 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="relative flex-1 max-w-md">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <input 
+                      type="text" 
+                      placeholder="Buscar por nombre o rol..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button 
+                      onClick={() => setIsFilterDrawerOpen(true)}
+                      variant="outline" 
+                      className={cn(
+                        "rounded-xl border-gray-200 text-gray-600 gap-2 h-10 transition-all",
+                        isFilterDrawerOpen && "bg-gray-100 border-gray-300",
+                        (filterOrigin !== 'all' || filterStage !== 'all' || filterStatus !== 'active') && "border-blue-500 text-blue-600 bg-blue-50"
+                      )}
+                    >
+                      <Filter className="w-4 h-4" /> Filtros
+                      {activeFiltersCount > 0 && (
+                        <span className="ml-2 bg-blue-600 text-white px-1.5 py-0.5 rounded-full text-[9px] font-bold">
+                          {activeFiltersCount}
+                        </span>
+                      )}
+                    </Button>
+                    <Button variant="outline" className="rounded-xl border-gray-200 text-gray-600 gap-2 h-10">
+                      <Download className="w-4 h-4" /> Exportar
+                    </Button>
+                  </div>
+                </div>
               </div>
-              <h3 className="text-xl font-black text-slate-900 mb-2 tracking-tight">Candidatos de la vacante</h3>
-              <p className="text-sm text-slate-500 mb-8 max-w-[280px] mx-auto leading-relaxed">
-                Aún no tienes candidatos. Comienza importando CVs o usando nuestra búsqueda inteligente con IA.
-              </p>
-              <div className="flex flex-col gap-3">
-                <div className="p-[2px] bg-gradient-to-r from-blue-600 via-indigo-600 to-fuchsia-600 rounded-2xl group transition-all hover:shadow-lg hover:shadow-indigo-100">
-                  <Button 
-                    variant="ghost"
-                    className="bg-white border-none text-blue-600 px-8 h-[44px] rounded-[14px] font-bold text-sm hover:bg-blue-50/50 transition-all flex items-center justify-center gap-2 w-full"
-                  >
-                    <Sparkles className="w-4 h-4 animate-pulse" /> Buscar con Serena IA
+
+              {/* Table Container */}
+              <div className="flex-1 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead className="sticky top-0 z-10 bg-gray-50 border-b border-gray-100">
+                      <tr>
+                        <th className="px-6 py-4 text-[11px] font-semibold text-gray-500">Candidato</th>
+                        <th className="px-6 py-4 text-[11px] font-semibold text-gray-500">Origen</th>
+                        <th className="px-6 py-4 text-[11px] font-semibold text-gray-500">Identificación</th>
+                        <th className="px-6 py-4 text-[11px] font-semibold text-gray-500">Etapa</th>
+                        <th className="px-6 py-4 text-[11px] font-semibold text-gray-500">Estado</th>
+                        <th className="px-6 py-4 text-[11px] font-semibold text-gray-500 text-right">Acciones</th>
+                      </tr>
+                    </thead>
+                      <tbody className="divide-y divide-gray-50">
+                        {filteredCandidates.map((candidate) => (
+                          <tr 
+                            key={candidate.id} 
+                            onClick={() => onCandidateClick(candidate.id)}
+                            className="hover:bg-gray-50 transition-colors group cursor-pointer"
+                          >
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold text-xs">
+                                {candidate.name.charAt(0)}
+                              </div>
+                              <span className="text-sm font-semibold text-gray-900">{candidate.name}</span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <Badge className={cn(
+                              "text-[10px] px-2 py-0.5 border-none font-semibold rounded-lg",
+                              candidate.origin === 'Serena IA' ? "bg-indigo-50 text-indigo-600" : "bg-gray-100 text-gray-600"
+                            )}>
+                              {candidate.origin === 'Serena IA' && <Sparkles className="w-3 h-3 mr-1 inline" />}
+                              {candidate.origin}
+                            </Badge>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div 
+                              onClick={(e) => handleCopy(e, candidate.identification, 'Identificación')}
+                              className="group/item flex items-center gap-2 text-xs font-semibold text-gray-500 hover:text-blue-600 transition-colors"
+                            >
+                              {candidate.identification}
+                              <Copy className="w-3 h-3 opacity-0 group-hover/item:opacity-100 transition-opacity" />
+                            </div>
+                          </td>
+
+                          <td className="px-6 py-4">
+                            <Badge variant="outline" className="text-[10px] border-gray-200 text-gray-500 font-semibold px-2 py-0.5 rounded-lg bg-white">
+                              {candidate.stage}
+                            </Badge>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-2">
+                              <div className={cn(
+                                "w-1.5 h-1.5 rounded-full animate-pulse",
+                                candidate.status === 'active' ? "bg-emerald-500" :
+                                candidate.status === 'hired' ? "bg-blue-500" :
+                                candidate.status === 'action_required' ? "bg-amber-500" :
+                                "bg-rose-500"
+                              )} />
+                              <span className={cn(
+                                "text-[10px] font-semibold",
+                                candidate.status === 'active' ? "text-emerald-600" :
+                                candidate.status === 'hired' ? "text-blue-600" :
+                                candidate.status === 'action_required' ? "text-amber-600" :
+                                "text-rose-600"
+                              )}>
+                                {candidate.status === 'active' ? 'Activo' : 
+                                 candidate.status === 'hired' ? 'Contratado' : 
+                                 candidate.status === 'action_required' ? 'Acción Requerida' : 
+                                 'Descartado'}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <div onClick={(e) => e.stopPropagation()}>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="w-8 h-8 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all"
+                                  >
+                                    <MoreVertical className="w-4 h-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-64 p-2 rounded-2xl shadow-2xl border-gray-100 bg-white/95 backdrop-blur-sm">
+                                  {/* Core Actions */}
+                                  <DropdownMenuItem 
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      onCandidateClick(candidate.id);
+                                    }}
+                                    className="flex items-center gap-3 p-2.5 cursor-pointer rounded-xl hover:bg-blue-50 transition-colors group"
+                                  >
+                                    <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-blue-600" />
+                                    <span className="text-xs font-semibold text-gray-600 group-hover:text-blue-600">Ver perfil completo</span>
+                                  </DropdownMenuItem>
+                                  
+                                  <div className="my-1 h-px bg-gray-100" />
+                                  
+                                  <DropdownMenuItem 
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="flex items-center gap-3 p-2.5 cursor-pointer rounded-xl hover:bg-blue-50 transition-colors group"
+                                  >
+                                    <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-blue-600" />
+                                    <span className="text-xs font-semibold text-gray-600 group-hover:text-blue-600">Siguiente etapa</span>
+                                  </DropdownMenuItem>
+
+                                  <DropdownMenuSub>
+                                    <DropdownMenuSubTrigger 
+                                      onClick={(e) => e.stopPropagation()}
+                                      className="flex items-center gap-3 p-2.5 cursor-pointer rounded-xl hover:bg-gray-50 transition-colors"
+                                    >
+                                      <Layers className="w-4 h-4 text-gray-400" />
+                                      <span className="text-xs font-semibold text-gray-600">Mover a etapa</span>
+                                    </DropdownMenuSubTrigger>
+                                    <DropdownMenuPortal>
+                                      <DropdownMenuSubContent 
+                                        onClick={(e) => e.stopPropagation()}
+                                        className="w-56 p-2 rounded-2xl shadow-2xl border-gray-100 bg-white ml-1"
+                                      >
+                                        {[
+                                          'Screening con Talent',
+                                          'Evaluación CV',
+                                          'Serena AI',
+                                          'Psicométrico',
+                                          'Caso Product Sense',
+                                          'Entrevista Hiring',
+                                          'Antecedentes',
+                                          'Seleccionado'
+                                        ].map((stage) => (
+                                          <DropdownMenuItem 
+                                            key={stage} 
+                                            onClick={(e) => e.stopPropagation()}
+                                            className="flex items-center gap-2 p-2 cursor-pointer rounded-lg hover:bg-gray-50"
+                                          >
+                                            <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                                            <span className="text-xs font-medium text-gray-600">{stage}</span>
+                                          </DropdownMenuItem>
+                                        ))}
+                                      </DropdownMenuSubContent>
+                                    </DropdownMenuPortal>
+                                  </DropdownMenuSub>
+
+                                  <DropdownMenuItem 
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="flex items-center gap-3 p-2.5 cursor-pointer rounded-xl hover:bg-gray-50 transition-colors group"
+                                  >
+                                    <FastForward className="w-4 h-4 text-gray-400" />
+                                    <span className="text-xs font-semibold text-gray-600">Omitir etapa</span>
+                                  </DropdownMenuItem>
+
+                                  <div className="my-1 h-px bg-gray-100" />
+
+                                  <DropdownMenuSub>
+                                    <DropdownMenuSubTrigger 
+                                      onClick={(e) => e.stopPropagation()}
+                                      className="flex items-center gap-3 p-2.5 cursor-pointer rounded-xl hover:bg-gray-50 transition-colors"
+                                    >
+                                      <MoreVertical className="w-4 h-4 text-gray-400 rotate-90" />
+                                      <span className="text-xs font-semibold text-gray-600">Más opciones</span>
+                                    </DropdownMenuSubTrigger>
+                                    <DropdownMenuPortal>
+                                      <DropdownMenuSubContent 
+                                        onClick={(e) => e.stopPropagation()}
+                                        className="w-60 p-2 rounded-2xl shadow-2xl border-gray-100 bg-white ml-1"
+                                      >
+                                        {[
+                                          { icon: Users, label: 'Agregar entrevista' },
+                                          { icon: ShieldCheck, label: 'Verificación Antecedentes' },
+                                          { icon: Copy, label: 'Copiar Application ID' },
+                                          { separator: true },
+                                          { icon: MessageCircle, label: 'WhatsApp', color: 'text-emerald-500' },
+                                          { icon: Mail, label: 'Email', color: 'text-blue-500' },
+                                          { icon: Phone, label: 'Llamar' },
+                                          { separator: true },
+                                          { icon: FileText, label: 'Ver CV' },
+                                          { icon: Download, label: 'Descargar CV' },
+                                          { icon: Printer, label: 'Imprimir perfil' },
+                                        ].map((item, idx) => (
+                                          item.separator ? (
+                                            <div key={`sep-${idx}`} className="my-1 h-px bg-gray-50" />
+                                          ) : (
+                                            <DropdownMenuItem 
+                                              key={item.label} 
+                                              onClick={(e) => e.stopPropagation()}
+                                              className="flex items-center gap-3 p-2.5 cursor-pointer rounded-lg hover:bg-gray-50"
+                                            >
+                                              {item.icon && <item.icon className={cn("w-4 h-4 text-gray-400", item.color)} />}
+                                              <span className="text-xs font-medium text-gray-600">{item.label}</span>
+                                            </DropdownMenuItem>
+                                          )
+                                        ))}
+                                      </DropdownMenuSubContent>
+                                    </DropdownMenuPortal>
+                                  </DropdownMenuSub>
+
+                                  <div className="my-1 h-px bg-gray-100" />
+
+                                  <DropdownMenuItem 
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="flex items-center gap-3 p-2.5 cursor-pointer rounded-xl hover:bg-rose-50 transition-colors group"
+                                  >
+                                    <Trash2 className="w-4 h-4 text-gray-400 group-hover:text-rose-600" />
+                                    <span className="text-xs font-semibold text-gray-600 group-hover:text-rose-600">Descartar candidato</span>
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            {/* Empty State - Hidden if candidates exist */}
+            <div className={cn(
+              "flex-1 flex flex-col items-center justify-center text-gray-500",
+              candidatesList.length > 0 && "hidden"
+            )}>
+              <div className="p-8 border-2 border-dashed border-gray-200 rounded-[32px] max-w-md text-center bg-white shadow-sm">
+                <div className="w-20 h-20 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
+                  <Users className="w-10 h-10" />
+                </div>
+                <h3 className="text-2xl font-semibold text-gray-900 mb-2 tracking-tight">Candidatos de la vacante</h3>
+                <p className="text-sm text-gray-500 mb-10 max-w-[280px] mx-auto leading-relaxed">
+                  Aún no tienes candidatos. Comienza importando CVs o usando nuestra búsqueda inteligente con IA.
+                </p>
+                <div className="flex flex-col items-center gap-8">
+                  <div className="flex items-center gap-4">
+                    <div className="p-[2px] bg-gradient-to-r from-blue-600 via-indigo-600 to-fuchsia-600 rounded-[20px] group transition-all hover:shadow-xl hover:shadow-indigo-100">
+                      <Button 
+                        variant="ghost"
+                        onClick={() => {
+                          setIsSerenaOpen(true);
+                          setSearchTrigger(prev => prev + 1);
+                        }}
+                        className="bg-white border-none text-blue-600 px-10 h-[56px] rounded-[18px] font-semibold text-sm hover:bg-blue-50/50 transition-all flex items-center justify-center gap-2"
+                      >
+                        <Sparkles className="w-5 h-5 animate-pulse" /> Buscar con Serena IA
+                      </Button>
+                    </div>
+                    
+                    <Button 
+                      variant="outline"
+                      onClick={() => setIsImportModalOpen(true)}
+                      className="border-gray-200 text-gray-600 px-10 h-[60px] rounded-[22px] font-semibold text-sm hover:bg-gray-50 transition-all flex items-center justify-center gap-2 bg-white"
+                    >
+                      <Upload className="w-5 h-5" /> Importar por CV
+                    </Button>
+                  </div>
+
+                  <Button variant="ghost" className="text-gray-400 hover:text-gray-600 font-semibold text-xs flex items-center gap-2 group tracking-wide">
+                    Compartir enlace de la vacante <LinkIcon className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                   </Button>
                 </div>
-                
-                <Button 
-                  variant="outline"
-                  onClick={() => setIsImportModalOpen(true)}
-                  className="border-slate-200 text-slate-500 px-8 h-12 rounded-2xl font-bold text-sm hover:bg-slate-50 transition-all flex items-center justify-center gap-2"
-                >
-                  <Upload className="w-4 h-4" /> Importar por CV
-                </Button>
               </div>
             </div>
           </div>
@@ -421,36 +769,272 @@ export function JobView({ onCandidateClick }: { onCandidateClick: (id: string) =
             </div>
 
             {/* Kanban Board */}
-            <div className="flex-1 flex overflow-hidden">
-              <div className="flex-1 overflow-x-auto bg-slate-50/30 p-4 scrollbar-hide">
+            <div className="flex-1 flex flex-col overflow-hidden items-center">
+              <div className="flex-1 w-full max-w-[1600px] overflow-x-auto bg-gray-50/30 px-8 py-4 scrollbar-hide">
                 <div className="flex gap-4 h-full min-w-max">
                   {candidatesByStage.map(stage => (
                     <div key={stage.id} className="w-72 flex flex-col">
-                      <div className="bg-white border border-slate-200 p-3 rounded-t-lg shadow-sm">
-                        <h3 className="text-xs font-bold text-slate-800">{stage.order}. {stage.name}</h3>
-                        <div className="flex gap-2 text-[9px] text-slate-400 mt-1 font-bold uppercase">
+                      <div className="bg-white border border-gray-200 p-3 rounded-t-lg shadow-sm">
+                        <h3 className="text-xs font-semibold text-gray-900">{stage.order}. {stage.name}</h3>
+                        <div className="flex gap-2 text-[9px] text-gray-400 mt-1 font-semibold">
                           <span className="text-green-600">{stage.active.length} activos</span>
                           <span>{stage.total} total</span>
                         </div>
                       </div>
-                      <div className="flex-1 bg-slate-100/20 border-x border-b border-slate-200 rounded-b-lg p-2 overflow-y-auto space-y-2">
+                      <div className="flex-1 bg-gray-100/20 border-x border-b border-gray-200 rounded-b-lg p-2 overflow-y-auto space-y-2">
                         {stage.active.map((c, idx) => renderCandidateCard(c, stage.order === 1 && idx === 0))}
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
-
-              <SerenaIAPanel 
-                isOpen={isSerenaOpen} 
-                onClose={() => setIsSerenaOpen(false)}
-                mode="global"
-                allCandidates={candidatesData}
-              />
             </div>
           </div>
         )}
+
+        <div className={cn(
+          "transition-all duration-300 ease-in-out h-full py-6 pr-8",
+          isSerenaOpen ? "w-[452px]" : "w-0 overflow-hidden"
+        )}>
+          <div className="h-full bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            <SerenaIAPanel 
+              isOpen={isSerenaOpen} 
+              onClose={() => setIsSerenaOpen(false)}
+              mode={serenaMode}
+              allCandidates={candidatesData}
+              searchTrigger={searchTrigger}
+              onImportCandidate={handleImportCandidate}
+            />
+          </div>
+        </div>
       </div>
+
+      {/* Modals & Overlays */}
+      <Dialog open={isImportModalOpen} onOpenChange={setIsImportModalOpen}>
+        <DialogContent className="max-w-2xl p-0 overflow-hidden rounded-[32px] border-none shadow-[0_32px_64px_-12px_rgba(0,0,0,0.14)] bg-white">
+          <div className="relative p-12 bg-gradient-to-b from-blue-50/50 to-white">
+            <button 
+              onClick={() => setIsImportModalOpen(false)}
+              className="absolute right-8 top-8 p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-400 hover:text-gray-600"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            
+            <div className="text-center mb-10">
+              <div className="w-20 h-20 bg-blue-600 text-white rounded-[24px] flex items-center justify-center mx-auto mb-6 shadow-xl shadow-blue-100 group">
+                <Upload className="w-10 h-10 group-hover:scale-110 transition-transform" />
+              </div>
+              <DialogTitle className="text-2xl font-bold text-gray-900 tracking-tight">Importar Candidatos</DialogTitle>
+              <p className="text-gray-500 mt-2 text-sm max-w-[360px] mx-auto leading-relaxed">
+                Nuestra IA procesará tus archivos PDF o ZIP automáticamente para extraer perfiles completos.
+              </p>
+            </div>
+
+            <div 
+              className="relative group cursor-pointer"
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => {
+                e.preventDefault();
+                setIsUploading(true);
+                setTimeout(() => {
+                  setIsUploading(false);
+                  setIsImportModalOpen(false);
+                  toast.success('Candidatos importados correctamente');
+                }, 3000);
+              }}
+            >
+              <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-[32px] blur-md opacity-10 group-hover:opacity-20 transition duration-500"></div>
+              <div className="relative border-2 border-dashed border-gray-200 rounded-[32px] p-12 bg-white flex flex-col items-center group-hover:border-blue-400 group-hover:bg-blue-50/10 transition-all duration-300">
+                <div className="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <Upload className="w-8 h-8 text-blue-600" />
+                </div>
+                <h3 className="text-lg font-bold text-gray-900 mb-1">Selecciona o arrastra tus archivos</h3>
+                <p className="text-sm text-gray-500 font-medium text-center">
+                  PDF, DOCX o archivos ZIP comprimidos
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-12 flex items-center justify-between">
+              <div className="flex items-center gap-6">
+                <div className="flex -space-x-3">
+                  {[1,2,3].map(i => (
+                    <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center overflow-hidden">
+                      <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 animate-pulse" />
+                    </div>
+                  ))}
+                </div>
+                <div className="text-left">
+                  <p className="text-xs font-bold text-gray-400 mb-1">Tecnología Serena IA</p>
+                  <p className="text-sm text-gray-600 font-medium">+2,450 CVs analizados hoy</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-4">
+                <label className="flex items-center gap-3 cursor-pointer group">
+                  <div className="relative flex items-center">
+                    <input 
+                      type="checkbox" 
+                      className="sr-only peer"
+                      checked={hasAcceptedTerms}
+                      onChange={(e) => setHasAcceptedTerms(e.target.checked)}
+                    />
+                    <div className="w-5 h-5 rounded-md border-2 border-gray-200 peer-checked:border-blue-600 peer-checked:bg-blue-600 transition-all flex items-center justify-center">
+                      {hasAcceptedTerms && <Check className="w-3.5 h-3.5 text-white" strokeWidth={4} />}
+                    </div>
+                  </div>
+                  <span className="text-sm text-gray-600 font-medium group-hover:text-gray-900 transition-colors">Acepto los términos de uso</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter className="p-8 bg-gray-50/50 border-t border-gray-100 flex items-center justify-between sm:justify-between">
+            <Button 
+              variant="ghost" 
+              onClick={() => setIsImportModalOpen(false)}
+              className="text-gray-500 hover:text-gray-700 font-semibold"
+            >
+              Cancelar
+            </Button>
+            <Button 
+              disabled={!hasAcceptedTerms}
+              onClick={() => {
+                setIsUploading(true);
+                setTimeout(() => {
+                  setIsUploading(false);
+                  setIsImportModalOpen(false);
+                  toast.success('Candidatos importados correctamente');
+                }, 3000);
+              }}
+              className={cn(
+                "px-14 h-[52px] rounded-2xl font-bold transition-all text-sm shadow-xl",
+                hasAcceptedTerms 
+                  ? "bg-blue-600 text-white hover:bg-blue-700 shadow-blue-200" 
+                  : "bg-gray-100 text-gray-400 cursor-not-allowed shadow-none border border-gray-200"
+              )}
+            >
+              Comenzar Importación
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+        {/* Filter Drawer */}
+        <Drawer 
+          open={isFilterDrawerOpen} 
+          onClose={() => setIsFilterDrawerOpen(false)} 
+          width="400px"
+        >
+          <div className="flex flex-col h-full bg-white">
+            <div className="p-6 border-b border-gray-100">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
+                    <Filter className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-semibold text-gray-900">Filtros Avanzados</h2>
+                    <p className="text-[10px] font-semibold text-gray-400">Refina tu búsqueda</p>
+                  </div>
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={() => setIsFilterDrawerOpen(false)}
+                  className="rounded-full hover:bg-gray-100"
+                >
+                  <X className="w-5 h-5 text-gray-400" />
+                </Button>
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6 space-y-8">
+              {/* Origen */}
+              <div className="space-y-3">
+                <label className="text-[11px] font-semibold text-gray-400 flex items-center gap-2">
+                  <Users className="w-3.5 h-3.5" /> Origen del candidato
+                </label>
+                <Select value={filterOrigin} onValueChange={setFilterOrigin}>
+                  <SelectTrigger className="h-12 rounded-xl border-gray-200 bg-gray-50 focus:bg-white transition-all font-semibold text-gray-600">
+                    <SelectValue placeholder="Seleccionar origen" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl border-gray-100 shadow-xl p-2">
+                    <SelectItem value="all" className="rounded-lg font-semibold text-gray-600">Todos los orígenes</SelectItem>
+                    <SelectItem value="serena" className="rounded-lg font-semibold text-gray-600">Serena IA</SelectItem>
+                    <SelectItem value="vacante" className="rounded-lg font-semibold text-gray-600">Vacante / Web</SelectItem>
+                    <SelectItem value="cv" className="rounded-lg font-semibold text-gray-600">Importado por CV</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Etapa */}
+              <div className="space-y-3">
+                <label className="text-[11px] font-semibold text-gray-400 flex items-center gap-2">
+                  <Layers className="w-3.5 h-3.5" /> Etapa del proceso
+                </label>
+                <Select value={filterStage} onValueChange={setFilterStage}>
+                  <SelectTrigger className="h-12 rounded-xl border-gray-200 bg-gray-50 focus:bg-white transition-all font-semibold text-gray-600">
+                    <SelectValue placeholder="Seleccionar etapa" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl border-gray-100 shadow-xl p-2 max-h-[300px]">
+                    <SelectItem value="all" className="rounded-lg font-semibold text-gray-600">Todas las etapas</SelectItem>
+                    {stages.map(stage => (
+                      <SelectItem key={stage.id} value={stage.id} className="rounded-lg font-semibold text-gray-600">
+                        {stage.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Estado */}
+              <div className="space-y-3">
+                <label className="text-[11px] font-semibold text-gray-400 flex items-center gap-2">
+                  <Sparkles className="w-3.5 h-3.5" /> Estado de la aplicación
+                </label>
+                <Select value={filterStatus} onValueChange={setFilterStatus}>
+                  <SelectTrigger className="h-12 rounded-xl border-gray-200 bg-gray-50 focus:bg-white transition-all font-semibold text-gray-600">
+                    <SelectValue placeholder="Seleccionar estado" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl border-gray-100 shadow-xl p-2">
+                    <SelectItem value="all" className="rounded-lg font-semibold text-gray-600">Todos los estados</SelectItem>
+                    <SelectItem value="active" className="rounded-lg font-semibold text-gray-600">Candidatos Activos</SelectItem>
+                    <SelectItem value="action_required" className="rounded-lg font-semibold text-emerald-600">Acción Requerida</SelectItem>
+                    <SelectItem value="on_hold" className="rounded-lg font-semibold text-gray-600">En espera</SelectItem>
+                    <SelectItem value="rejected" className="rounded-lg font-semibold text-rose-600">Descartados</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="p-6 border-t border-gray-100 bg-gray-50/30 flex items-center gap-3">
+              <Button 
+                variant="outline" 
+                className="flex-1 h-12 rounded-xl border-gray-200 font-semibold text-gray-600 hover:bg-white transition-all"
+                onClick={() => {
+                  setFilterOrigin('all');
+                  setFilterStage('all');
+                  setFilterStatus('active');
+                }}
+              >
+                Limpiar
+              </Button>
+              <Button 
+                className="flex-[2] h-12 px-8 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-all shadow-lg shadow-blue-200"
+                onClick={() => setIsFilterDrawerOpen(false)}
+              >
+                Aplicar Filtros
+                {activeFiltersCount > 0 && (
+                  <span className="ml-2 bg-white text-blue-600 px-2 py-0.5 rounded-full text-[10px] font-bold">
+                    {activeFiltersCount}
+                  </span>
+                )}
+              </Button>
+            </div>
+          </div>
+        </Drawer>
     </div>
+    </>
   );
 }

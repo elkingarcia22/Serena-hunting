@@ -178,7 +178,7 @@ export function SerenaAIDetailView({ interviewData, score = 88, onBack, isValent
       </div>
 
       <Tabs defaultValue="analysis" className="w-full" onValueChange={setActiveTab}>
-        <TabsList className="bg-slate-200/50 p-1.5 rounded-2xl mb-8 w-full sm:w-auto flex justify-start h-auto border border-slate-200/30">
+        <TabsList className="bg-gray-200/50 p-1.5 rounded-2xl mb-8 w-full sm:w-auto flex justify-start h-auto border border-gray-200/30">
           <TabsTrigger 
             value="analysis" 
             className="rounded-xl px-6 py-2.5 text-xs font-bold data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-blue-600 transition-all flex items-center gap-2"
@@ -260,7 +260,7 @@ export function SerenaAIDetailView({ interviewData, score = 88, onBack, isValent
             <div className="flex items-center justify-between px-1">
               <div className="flex items-center gap-2">
                 <Target className="w-4 h-4 text-gray-400" />
-                <h4 className="text-[11px] font-black tracking-widest text-slate-500 uppercase">Desglose por Pregunta</h4>
+                <h4 className="text-[11px] font-black tracking-widest text-gray-500 uppercase">Desglose por Pregunta</h4>
               </div>
               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">
                 {questionScores.length} TOTALES
@@ -288,9 +288,9 @@ export function SerenaAIDetailView({ interviewData, score = 88, onBack, isValent
                             {item.question}
                           </p>
                           {item.analysis && (
-                            <div className="mt-3 p-3 bg-slate-50/80 rounded-xl border border-slate-100/50 relative group/analysis">
+                            <div className="mt-3 p-3 bg-gray-50/80 rounded-xl border border-gray-100/50 relative group/analysis">
                               <div className="absolute -left-px top-3 bottom-3 w-0.5 bg-blue-500/30 rounded-full" />
-                              <p className="text-[12px] text-slate-600 leading-relaxed font-medium italic pl-1">
+                              <p className="text-[12px] text-gray-600 leading-relaxed font-medium italic pl-1">
                                 "{item.analysis}"
                               </p>
                             </div>
@@ -318,7 +318,7 @@ export function SerenaAIDetailView({ interviewData, score = 88, onBack, isValent
           <Card className="border-gray-100 shadow-sm overflow-hidden">
             <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-white">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600">
+                <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center text-gray-600">
                   <MessageSquare className="w-5 h-5" />
                 </div>
                 <div>
@@ -332,7 +332,7 @@ export function SerenaAIDetailView({ interviewData, score = 88, onBack, isValent
               </Button>
             </div>
             
-            <div className="p-6 space-y-8 bg-slate-50/50">
+            <div className="p-6 space-y-8 bg-gray-50">
               {transcript.map((msg, idx) => (
                 <div key={idx} className={cn(
                   "flex gap-4 group animate-in fade-in slide-in-from-bottom-2 duration-300",
@@ -341,7 +341,7 @@ export function SerenaAIDetailView({ interviewData, score = 88, onBack, isValent
                   {/* Avatar */}
                   <div className={cn(
                     "w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm",
-                    msg.role === 'serena' ? "bg-white border border-gray-100 text-blue-600" : "bg-slate-900 text-white"
+                    msg.role === 'serena' ? "bg-white border border-gray-100 text-blue-600" : "bg-gray-900 text-white"
                   )}>
                     {msg.role === 'serena' ? <Bot className="w-6 h-6" /> : <span className="font-black text-xs">CP</span>}
                   </div>
@@ -361,18 +361,18 @@ export function SerenaAIDetailView({ interviewData, score = 88, onBack, isValent
                     <div className={cn(
                       "relative p-4 rounded-3xl text-sm leading-relaxed shadow-sm transition-all group-hover:shadow-md",
                       msg.role === 'candidate' 
-                        ? "bg-white text-gray-800 border-2 border-slate-100 rounded-tr-none" 
-                        : "bg-slate-100 text-gray-700 border border-slate-200 rounded-tl-none"
+                        ? "bg-white text-gray-800 border-2 border-gray-100 rounded-tr-none" 
+                        : "bg-gray-100 text-gray-700 border border-gray-200 rounded-tl-none"
                     )}>
                         {msg.text}
                         
                         {/* Audio Player */}
-                        <div className="mt-6 pt-4 border-t border-slate-200/60 flex items-center gap-4">
+                        <div className="mt-6 pt-4 border-t border-gray-200/60 flex items-center gap-4">
                           <button 
                             onClick={() => handlePlayAudio(idx, msg.role)}
                             className={cn(
-                              "w-10 h-10 rounded-full text-white flex items-center justify-center transition-all shadow-lg shadow-slate-200 shrink-0 group/play",
-                              playingAudioIndex === idx ? "bg-blue-600 hover:bg-blue-700" : "bg-slate-900 hover:bg-slate-800"
+                              "w-10 h-10 rounded-full text-white flex items-center justify-center transition-all shadow-lg shadow-gray-200 shrink-0 group/play",
+                              playingAudioIndex === idx ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-900 hover:bg-gray-800"
                             )}
                           >
                             {playingAudioIndex === idx ? (
@@ -394,7 +394,7 @@ export function SerenaAIDetailView({ interviewData, score = 88, onBack, isValent
                                   "flex-1 rounded-full transition-all duration-300",
                                   playingAudioIndex === idx 
                                     ? "bg-blue-500" 
-                                    : msg.role === 'serena' ? "bg-slate-300" : "bg-slate-200"
+                                    : msg.role === 'serena' ? "bg-gray-300" : "bg-gray-200"
                                 )} 
                                 style={{ 
                                   height: `${h * 100}%`,
@@ -405,7 +405,7 @@ export function SerenaAIDetailView({ interviewData, score = 88, onBack, isValent
                             ))}
                           </div>
                           
-                          <div className="text-[10px] font-black text-slate-400 tabular-nums uppercase tracking-widest bg-white/50 px-2 py-1 rounded-md border border-slate-200/60">
+                          <div className="text-[10px] font-black text-gray-400 tabular-nums uppercase tracking-widest bg-white/50 px-2 py-1 rounded-md border border-gray-200/60">
                             0:45
                           </div>
                         </div>
@@ -425,12 +425,12 @@ export function SerenaAIDetailView({ interviewData, score = 88, onBack, isValent
             <div className="space-y-6">
               {/* Header — Patrón Serena IA (Consistent with Psychometric) */}
               <div className="flex items-center gap-4 pb-6 border-b border-gray-100/80">
-                <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-500 border border-slate-100 shadow-sm">
+                <div className="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center text-gray-500 border border-gray-100 shadow-sm">
                   <Brain className="w-6 h-6" />
                 </div>
                 <div>
-                  <h4 className="text-lg font-black text-slate-900 tracking-tight">Análisis de la Entrevista</h4>
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-0.5">Evaluado por Serena IA</p>
+                  <h4 className="text-lg font-black text-gray-900 tracking-tight">Análisis de la Entrevista</h4>
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-0.5">Evaluado por Serena IA</p>
                 </div>
               </div>
 
@@ -447,69 +447,69 @@ export function SerenaAIDetailView({ interviewData, score = 88, onBack, isValent
               <div className="space-y-6">
                 {/* 1. Áreas de Mejora */}
                 <div className="space-y-4">
-                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Áreas de Mejora</h4>
+                  <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Áreas de Mejora</h4>
                   <ul className="space-y-5">
                     <li className="flex items-start gap-3">
                       <span className="mt-2 w-2 h-2 rounded-full bg-amber-500 flex-shrink-0 shadow-sm shadow-amber-100" />
-                      <p className="text-[14px] text-slate-600 leading-relaxed font-medium">
+                      <p className="text-[14px] text-gray-600 leading-relaxed font-medium">
                         Podría mejorar en la claridad al describir experiencias pasadas, especialmente en el ámbito de edtech.
                       </p>
                     </li>
                     <li className="flex items-start gap-3">
                       <span className="mt-2 w-2 h-2 rounded-full bg-amber-500 flex-shrink-0 shadow-sm shadow-amber-100" />
-                      <p className="text-[14px] text-slate-600 leading-relaxed font-medium">
+                      <p className="text-[14px] text-gray-600 leading-relaxed font-medium">
                         Sería beneficioso profundizar en ejemplos específicos de integración de IA en productos para demostrar un conocimiento más detallado.
                       </p>
                     </li>
                   </ul>
                 </div>
 
-                <div className="h-px bg-slate-50 w-full" />
+                <div className="h-px bg-gray-50 w-full" />
 
                 {/* 2. Habilidades Identificadas */}
                 <div className="space-y-4">
-                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Habilidades Identificadas</h4>
+                  <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Habilidades Identificadas</h4>
                   <ul className="space-y-5">
                     <li className="flex items-start gap-3">
                       <span className="mt-2 w-2 h-2 rounded-full bg-blue-500 flex-shrink-0 shadow-sm shadow-blue-100" />
-                      <p className="text-[14px] text-slate-600 leading-relaxed font-medium">
+                      <p className="text-[14px] text-gray-600 leading-relaxed font-medium">
                         Experiencia en el desarrollo de módulos de reclutamiento con inteligencia artificial.
                       </p>
                     </li>
                     <li className="flex items-start gap-3">
                       <span className="mt-2 w-2 h-2 rounded-full bg-blue-500 flex-shrink-0 shadow-sm shadow-blue-100" />
-                      <p className="text-[14px] text-slate-600 leading-relaxed font-medium">
+                      <p className="text-[14px] text-gray-600 leading-relaxed font-medium">
                         Conocimiento en la integración de modelos de IA mediante API Keys y en servidores locales.
                       </p>
                     </li>
                     <li className="flex items-start gap-3">
                       <span className="mt-2 w-2 h-2 rounded-full bg-blue-500 flex-shrink-0 shadow-sm shadow-blue-100" />
-                      <p className="text-[14px] text-slate-600 leading-relaxed font-medium">
+                      <p className="text-[14px] text-gray-600 leading-relaxed font-medium">
                         Capacidad para definir estrategias y roadmaps equilibrando prioridades urgentes e importantes.
                       </p>
                     </li>
                     <li className="flex items-start gap-3">
                       <span className="mt-2 w-2 h-2 rounded-full bg-blue-500 flex-shrink-0 shadow-sm shadow-blue-100" />
-                      <p className="text-[14px] text-slate-600 leading-relaxed font-medium">
+                      <p className="text-[14px] text-gray-600 leading-relaxed font-medium">
                         Habilidad para comunicarse efectivamente con stakeholders técnicos y de negocio, adaptando el lenguaje según la audiencia.
                       </p>
                     </li>
                   </ul>
                 </div>
 
-                <div className="h-px bg-slate-50 w-full" />
+                <div className="h-px bg-gray-50 w-full" />
 
                 {/* 3. Seguridad */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-2">
                   <div className="space-y-4">
-                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Intentos de Trampa</h4>
+                    <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Intentos de Trampa</h4>
                     <p className="text-sm font-bold text-emerald-600 flex items-center gap-2 px-1">
                       <CheckCircle2 className="w-4 h-4" />
                       Ninguno identificado
                     </p>
                   </div>
                   <div className="space-y-4">
-                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Prompt Injection</h4>
+                    <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Prompt Injection</h4>
                     <p className="text-sm font-bold text-emerald-600 flex items-center gap-2 px-1">
                       <CheckCircle2 className="w-4 h-4" />
                       Ninguno identificado
@@ -527,8 +527,8 @@ export function SerenaAIDetailView({ interviewData, score = 88, onBack, isValent
             {/* Header Section */}
             <div className="flex items-center justify-between px-1">
               <div className="flex items-center gap-3">
-                <h4 className="text-[11px] font-black tracking-widest text-slate-500 uppercase">Lista de comentarios</h4>
-                <Badge variant="outline" className="text-[10px] border-slate-200 bg-white">{comments.length}</Badge>
+                <h4 className="text-[11px] font-black tracking-widest text-gray-500 uppercase">Lista de comentarios</h4>
+                <Badge variant="outline" className="text-[10px] border-gray-200 bg-white">{comments.length}</Badge>
               </div>
               <Button 
                 variant="secondary"
@@ -542,12 +542,12 @@ export function SerenaAIDetailView({ interviewData, score = 88, onBack, isValent
 
             {/* Inline Comment Form */}
             {isAddingComment && (
-              <Card className="p-6 border-slate-200 shadow-md bg-white animate-in slide-in-from-top-4 duration-300 rounded-3xl">
+              <Card className="p-6 border-gray-200 shadow-md bg-white animate-in slide-in-from-top-4 duration-300 rounded-3xl">
                 <textarea 
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
                   placeholder="Escribe un comentario sobre el desempeño del candidato..."
-                  className="w-full h-32 p-4 text-sm bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-slate-500/20 resize-none mb-4 placeholder:text-gray-400 font-medium"
+                  className="w-full h-32 p-4 text-sm bg-gray-50 rounded-2xl border-none focus:ring-2 focus:ring-gray-500/20 resize-none mb-4 placeholder:text-gray-400 font-medium"
                   autoFocus
                 />
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -557,11 +557,11 @@ export function SerenaAIDetailView({ interviewData, score = 88, onBack, isValent
                   >
                     <div className={cn(
                       "w-5 h-5 rounded-md border flex items-center justify-center transition-all",
-                      isPrivate ? "bg-slate-900 border-slate-900 text-white" : "bg-white border-slate-200 group-hover:border-slate-300"
+                      isPrivate ? "bg-gray-900 border-gray-900 text-white" : "bg-white border-gray-200 group-hover:border-gray-300"
                     )}>
                       {isPrivate && <Lock className="w-3 h-3" />}
                     </div>
-                    <span className="text-xs font-bold text-slate-600">Privado</span>
+                    <span className="text-xs font-bold text-gray-600">Privado</span>
                   </div>
                   
                   <div className="flex items-center gap-3 w-full sm:w-auto">
@@ -572,14 +572,14 @@ export function SerenaAIDetailView({ interviewData, score = 88, onBack, isValent
                         setNewComment('');
                         setIsPrivate(false);
                       }}
-                      className="flex-1 sm:flex-none rounded-xl text-slate-500 font-bold text-xs px-6 hover:bg-slate-100 transition-all"
+                      className="flex-1 sm:flex-none rounded-xl text-gray-500 font-bold text-xs px-6 hover:bg-gray-100 transition-all"
                     >
                       Cancelar
                     </Button>
                     <Button 
                       onClick={handleAddComment}
                       disabled={!newComment.trim()}
-                      className="flex-1 sm:flex-none rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-8 py-2.5 shadow-lg shadow-slate-200 transition-all disabled:opacity-50"
+                      className="flex-1 sm:flex-none rounded-xl bg-gray-900 hover:bg-gray-800 text-white font-bold text-xs px-8 py-2.5 shadow-lg shadow-gray-200 transition-all disabled:opacity-50"
                     >
                       Publicar
                     </Button>
@@ -589,7 +589,7 @@ export function SerenaAIDetailView({ interviewData, score = 88, onBack, isValent
             )}
             
             {comments.length === 0 ? (
-              <div className="p-16 text-center bg-gray-50/50 rounded-3xl border border-dashed border-gray-200">
+              <div className="p-16 text-center bg-gray-50 rounded-3xl border border-dashed border-gray-200">
                 <MessageSquare className="w-12 h-12 text-gray-300 mx-auto mb-4" />
                 <p className="text-sm text-gray-400 font-medium">No hay comentarios aún.</p>
               </div>
@@ -603,7 +603,7 @@ export function SerenaAIDetailView({ interviewData, score = 88, onBack, isValent
                         <textarea
                           value={editingText}
                           onChange={e => setEditingText(e.target.value)}
-                          className="w-full resize-none text-sm bg-gray-50 p-2 rounded-md border border-slate-200"
+                          className="w-full resize-none text-sm bg-gray-50 p-2 rounded-md border border-gray-200"
                           rows={3}
                           autoFocus
                         />

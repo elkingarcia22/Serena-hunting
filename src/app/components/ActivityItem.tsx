@@ -31,7 +31,7 @@ const eventTypeBadges: Record<EventType, { label: string; className: string }> =
   email: { label: 'Email', className: 'bg-cyan-100 text-cyan-700' },
   update: { label: 'Update', className: 'bg-gray-100 text-gray-700' },
   stage: { label: 'Stage', className: 'bg-orange-100 text-orange-700' },
-  system: { label: 'System', className: 'bg-slate-100 text-slate-700' },
+  system: { label: 'System', className: 'bg-gray-100 text-gray-700' },
   note: { label: 'Note', className: 'bg-yellow-100 text-yellow-700' },
   todo: { label: 'To-do', className: 'bg-pink-100 text-pink-700' },
   evaluation: { label: 'Evaluación', className: 'bg-emerald-100 text-emerald-700' },

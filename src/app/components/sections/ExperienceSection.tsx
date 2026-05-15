@@ -215,8 +215,8 @@ export function ExperienceSection({ experiences = mockExperiences, isEditMode = 
       {/* Header */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <div className="flex items-center gap-3 mb-1">
-          <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center">
-            <Briefcase className="w-5 h-5 text-slate-600" />
+          <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
+            <Briefcase className="w-5 h-5 text-gray-600" />
           </div>
           <div>
             <h2 className="text-xl font-semibold text-gray-900">Experiencia Laboral</h2>
@@ -391,7 +391,7 @@ export function ExperienceSection({ experiences = mockExperiences, isEditMode = 
                       </div>
                     </div>
 
-                    <label className="flex items-center gap-2 cursor-pointer p-1.5 rounded-md hover:bg-slate-50 transition-colors w-max">
+                    <label className="flex items-center gap-2 cursor-pointer p-1.5 rounded-md hover:bg-gray-50 transition-colors w-max">
                       <input
                         type="checkbox"
                         checked={editForm.current}
@@ -409,7 +409,7 @@ export function ExperienceSection({ experiences = mockExperiences, isEditMode = 
                         }}
                         className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                       />
-                      <span className="text-sm font-medium text-slate-600">Actualmente trabajo aquí</span>
+                      <span className="text-sm font-medium text-gray-600">Actualmente trabajo aquí</span>
                     </label>
                   </div>
                 </div>
@@ -535,7 +535,7 @@ export function ExperienceSection({ experiences = mockExperiences, isEditMode = 
                 {/* Achievements */}
                 {exp.achievements && exp.achievements.length > 0 && (
                   <div>
-                    <h4 className="text-sm font-medium text-gray-900 mb-2 font-bold tracking-tight uppercase text-xs text-slate-500">Logros destacados:</h4>
+                    <h4 className="text-sm font-medium text-gray-900 mb-2 font-bold tracking-tight uppercase text-xs text-gray-500">Logros destacados:</h4>
                     <ul className="space-y-1.5">
                       {exp.achievements.map((achievement, i) => (
                         <li key={`${exp.id}-achievement-${i}`} className="flex items-start gap-2 text-sm text-gray-700">
