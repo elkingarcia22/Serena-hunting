@@ -626,53 +626,79 @@ export function JobView({
                   Serena IA
                 </Button>
 
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <div className="p-[2px] bg-gradient-to-r from-blue-600 via-indigo-600 to-fuchsia-600 rounded-full group transition-all hover:shadow-lg hover:shadow-indigo-100">
-                    <Button variant="ghost" className="bg-white hover:bg-transparent text-gray-600 font-semibold text-[11px] h-[40px] px-6 transition-all rounded-full flex items-center gap-2 relative overflow-hidden w-full">
-                      <Sparkles className="w-4 h-4 text-blue-500 group-hover:text-white transition-colors" />
-                      <span className="group-hover:text-white transition-colors">Importar candidatos</span>
-                      <ChevronDown className="w-3.5 h-3.5 text-gray-400 group-hover:text-white transition-colors" />
-                    </Button>
-                  </div>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-80 p-2 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] border-gray-100 bg-white">
-                  <DropdownMenuItem 
+              {vacancy?.status === 'draft' ? (
+                // En draft: dos botones separados
+                <>
+                  <Button
                     onClick={() => {
                       setSerenaMode('search');
                       setIsSerenaOpen(true);
                       setSearchTrigger(prev => prev + 1);
                     }}
-                    className="flex items-start gap-3.5 p-3.5 cursor-pointer rounded-xl hover:bg-gray-50 transition-all group outline-none"
+                    className="h-11 px-6 rounded-full font-semibold text-xs transition-all flex items-center gap-2 shadow-lg bg-blue-100 text-blue-600 hover:bg-blue-200 shadow-blue-50"
                   >
-                    <div className="w-11 h-11 rounded-xl bg-gray-50 flex items-center justify-center flex-shrink-0 group-hover:bg-white group-hover:shadow-sm transition-all border border-transparent group-hover:border-gray-100">
-                      <Search className="w-5 h-5 text-gray-400 group-hover:text-blue-600 transition-colors" />
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      <span className="text-sm font-semibold text-gray-900 group-hover:text-blue-600 transition-colors flex items-center gap-2">
-                        Búsqueda Inteligente
-                        <Sparkles className="w-3.5 h-3.5 text-blue-500 animate-pulse" />
-                      </span>
-                      <p className="text-xs text-gray-500 leading-snug">Encuentra perfiles ideales automáticamente en tu base de datos.</p>
-                    </div>
-                  </DropdownMenuItem>
+                    <Search className="w-4 h-4" />
+                    Buscar Candidatos IA
+                  </Button>
 
-                  <div className="h-px bg-gray-100 my-1 mx-2" />
-
-                  <DropdownMenuItem 
+                  <Button
                     onClick={() => setIsImportModalOpen(true)}
-                    className="flex items-start gap-3.5 p-3.5 cursor-pointer rounded-xl hover:bg-gray-50 transition-all group outline-none"
+                    className="h-11 px-6 rounded-full font-semibold text-xs transition-all flex items-center gap-2 shadow-lg bg-gray-100 text-gray-600 hover:bg-gray-200 shadow-gray-50"
                   >
-                    <div className="w-11 h-11 rounded-xl bg-gray-50 flex items-center justify-center flex-shrink-0 group-hover:bg-white group-hover:shadow-sm transition-all border border-transparent group-hover:border-gray-100">
-                      <Upload className="w-5 h-5 text-gray-400 group-hover:text-gray-900 transition-colors" />
+                    <Upload className="w-4 h-4" />
+                    Importar desde CV
+                  </Button>
+                </>
+              ) : (
+                // En published: dropdown original
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <div className="p-[2px] bg-gradient-to-r from-blue-600 via-indigo-600 to-fuchsia-600 rounded-full group transition-all hover:shadow-lg hover:shadow-indigo-100">
+                      <Button variant="ghost" className="bg-white hover:bg-transparent text-gray-600 font-semibold text-[11px] h-[40px] px-6 transition-all rounded-full flex items-center gap-2 relative overflow-hidden w-full">
+                        <Sparkles className="w-4 h-4 text-blue-500 group-hover:text-white transition-colors" />
+                        <span className="group-hover:text-white transition-colors">Importar candidatos</span>
+                        <ChevronDown className="w-3.5 h-3.5 text-gray-400 group-hover:text-white transition-colors" />
+                      </Button>
                     </div>
-                    <div className="flex flex-col gap-1">
-                      <span className="text-sm font-semibold text-gray-900 group-hover:text-gray-600 transition-colors">Importar CV</span>
-                      <p className="text-xs text-gray-500 leading-snug">Sube hojas de vida en formato PDF o carpetas ZIP.</p>
-                    </div>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-80 p-2 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] border-gray-100 bg-white">
+                    <DropdownMenuItem
+                      onClick={() => {
+                        setSerenaMode('search');
+                        setIsSerenaOpen(true);
+                        setSearchTrigger(prev => prev + 1);
+                      }}
+                      className="flex items-start gap-3.5 p-3.5 cursor-pointer rounded-xl hover:bg-gray-50 transition-all group outline-none"
+                    >
+                      <div className="w-11 h-11 rounded-xl bg-gray-50 flex items-center justify-center flex-shrink-0 group-hover:bg-white group-hover:shadow-sm transition-all border border-transparent group-hover:border-gray-100">
+                        <Search className="w-5 h-5 text-gray-400 group-hover:text-blue-600 transition-colors" />
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <span className="text-sm font-semibold text-gray-900 group-hover:text-blue-600 transition-colors flex items-center gap-2">
+                          Búsqueda Inteligente
+                          <Sparkles className="w-3.5 h-3.5 text-blue-500 animate-pulse" />
+                        </span>
+                        <p className="text-xs text-gray-500 leading-snug">Encuentra perfiles ideales automáticamente en tu base de datos.</p>
+                      </div>
+                    </DropdownMenuItem>
+
+                    <div className="h-px bg-gray-100 my-1 mx-2" />
+
+                    <DropdownMenuItem
+                      onClick={() => setIsImportModalOpen(true)}
+                      className="flex items-start gap-3.5 p-3.5 cursor-pointer rounded-xl hover:bg-gray-50 transition-all group outline-none"
+                    >
+                      <div className="w-11 h-11 rounded-xl bg-gray-50 flex items-center justify-center flex-shrink-0 group-hover:bg-white group-hover:shadow-sm transition-all border border-transparent group-hover:border-gray-100">
+                        <Upload className="w-5 h-5 text-gray-400 group-hover:text-gray-900 transition-colors" />
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <span className="text-sm font-semibold text-gray-900 group-hover:text-gray-600 transition-colors">Importar CV</span>
+                        <p className="text-xs text-gray-500 leading-snug">Sube hojas de vida en formato PDF o carpetas ZIP.</p>
+                      </div>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
 
               <Tooltip content="Ir a la vacante">
                 <Button variant="outline" size="icon" className="h-11 w-11 border-gray-200 text-gray-600 hover:bg-gray-50 bg-transparent transition-all rounded-xl">
