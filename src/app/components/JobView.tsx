@@ -736,7 +736,7 @@ export function JobView({
                         <th className="px-6 py-4 text-[11px] font-semibold text-gray-500">Candidato</th>
                         {vacancy?.status === 'draft' ? (
                           <>
-                            <th className="px-6 py-4 text-[11px] font-semibold text-gray-500">Numero de Celular</th>
+                            <th className="px-6 py-4 text-[11px] font-semibold text-gray-500">Identificación</th>
                             <th className="px-6 py-4 text-[11px] font-semibold text-gray-500">Fecha de Importación</th>
                             <th className="px-6 py-4 text-[11px] font-semibold text-gray-500">ID Importación</th>
                             <th className="px-6 py-4 text-[11px] font-semibold text-gray-500">Origen</th>
@@ -802,10 +802,10 @@ export function JobView({
                               <>
                                 <td className="px-6 py-4">
                                   <div
-                                    onClick={(e) => handleCopy(e, candidate.phone, 'Número de Celular')}
+                                    onClick={(e) => handleCopy(e, candidate.identification, 'Identificación')}
                                     className="group/item flex items-center gap-2 text-xs font-semibold text-gray-500 hover:text-blue-600 transition-colors"
                                   >
-                                    {candidate.phone}
+                                    {candidate.identification}
                                     <Copy className="w-3 h-3 opacity-0 group-hover/item:opacity-100 transition-opacity" />
                                   </div>
                                 </td>
