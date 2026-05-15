@@ -24,6 +24,298 @@ interface SerenaIAPanelProps {
   onImportCandidate?: (candidate: any) => void;
 }
 
+const openGmailSimulation = (candidate: any) => {
+  const gmailHtml = `
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Gmail - Invitación</title>
+      <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+          background: #f5f5f5;
+        }
+        .gmail-container {
+          display: flex;
+          height: 100vh;
+          background: #fff;
+        }
+        .sidebar {
+          width: 256px;
+          background: #f8f9fa;
+          padding: 16px;
+          border-right: 1px solid #e0e0e0;
+          overflow-y: auto;
+        }
+        .logo {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-bottom: 20px;
+          color: #5f6368;
+          font-size: 22px;
+          font-weight: 500;
+        }
+        .menu-item {
+          padding: 12px 16px;
+          margin-bottom: 4px;
+          border-radius: 0 16px 16px 0;
+          cursor: pointer;
+          color: #202124;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          font-size: 14px;
+        }
+        .menu-item.active {
+          background: #fce8e6;
+          color: #d32f2f;
+          font-weight: 500;
+        }
+        .compose-btn {
+          width: 100%;
+          padding: 12px;
+          background: #c5221f;
+          color: white;
+          border: none;
+          border-radius: 24px;
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+          margin-bottom: 16px;
+        }
+        .compose-btn:hover { background: #b71c1c; }
+        .email-list {
+          flex: 1;
+          overflow-y: auto;
+          border-right: 1px solid #e0e0e0;
+          width: 360px;
+        }
+        .email-item {
+          padding: 12px 16px;
+          border-bottom: 1px solid #e0e0e0;
+          background: #fff;
+          cursor: pointer;
+          transition: background 0.2s;
+        }
+        .email-item:hover { background: #f5f5f5; }
+        .email-item.active {
+          background: #fce8e6;
+        }
+        .email-sender {
+          font-weight: 500;
+          color: #202124;
+          font-size: 14px;
+          margin-bottom: 4px;
+        }
+        .email-subject {
+          font-size: 13px;
+          color: #5f6368;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .email-preview {
+          font-size: 12px;
+          color: #9aa0a6;
+          margin-top: 2px;
+        }
+        .email-viewer {
+          flex: 1;
+          padding: 40px 60px;
+          overflow-y: auto;
+          background: #fff;
+        }
+        .email-meta {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding-bottom: 12px;
+          border-bottom: 1px solid #e0e0e0;
+        }
+        .email-from {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+        .avatar {
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          font-weight: bold;
+        }
+        .sender-info {
+          display: flex;
+          flex-direction: column;
+        }
+        .sender-name {
+          font-weight: 500;
+          color: #202124;
+        }
+        .sender-email {
+          font-size: 13px;
+          color: #5f6368;
+        }
+        .email-title {
+          font-size: 24px;
+          font-weight: 700;
+          color: #1e293b;
+          margin: 24px 0 20px 0;
+          background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+        }
+        .email-body {
+          line-height: 1.8;
+          color: #333;
+          font-size: 14px;
+        }
+        .email-body p {
+          margin-bottom: 14px;
+        }
+        .highlight-section {
+          background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+          border-left: 4px solid #2563eb;
+          padding: 16px;
+          margin: 20px 0;
+          border-radius: 6px;
+        }
+        .highlight-section ul {
+          margin-left: 20px;
+          margin-bottom: 0;
+        }
+        .highlight-section li {
+          margin-bottom: 8px;
+          color: #1e293b;
+          font-weight: 500;
+          font-size: 13px;
+        }
+        .cta-button {
+          display: inline-block;
+          background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+          color: white;
+          padding: 12px 36px;
+          border-radius: 6px;
+          text-decoration: none;
+          font-weight: 600;
+          margin: 20px 0;
+          cursor: pointer;
+          border: none;
+          font-size: 14px;
+          box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+          transition: all 0.3s;
+        }
+        .cta-button:hover {
+          background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+          box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
+          transform: translateY(-2px);
+        }
+        .signature {
+          margin-top: 24px;
+          padding-top: 20px;
+          border-top: 1px solid #e0e0e0;
+          color: #5f6368;
+          font-size: 13px;
+        }
+        .signature strong {
+          color: #2563eb;
+          font-weight: 600;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="gmail-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+          <div class="logo">
+            <span style="color: #ea4335; font-weight: bold;">G</span>
+            <span style="color: #4285f4; font-weight: bold;">m</span>
+            <span style="color: #fbbc04; font-weight: bold;">a</span>
+            <span style="color: #ea4335; font-weight: bold;">i</span>
+            <span style="color: #34a853; font-weight: bold;">l</span>
+          </div>
+          <button class="compose-btn">+ Redactar</button>
+          <div class="menu-item active">📧 Recibidos</div>
+          <div class="menu-item">⭐ Destacados</div>
+          <div class="menu-item">📤 Enviados</div>
+          <div class="menu-item">📋 Borradores</div>
+          <div class="menu-item">🗑️ Papelera</div>
+        </div>
+
+        <!-- Email List -->
+        <div class="email-list">
+          <div style="padding: 12px 16px; border-bottom: 1px solid #e0e0e0; background: #f8f9fa;">
+            <input type="text" placeholder="Buscar correos" style="width: 100%; padding: 8px; border: 1px solid #dadce0; border-radius: 4px; font-size: 13px;">
+          </div>
+          <div class="email-item active">
+            <div class="email-sender">TechFlow Solutions - Equipo de Talento - Oportunidad de Trabajo</div>
+            <div class="email-subject">🎯 Te invitamos a aplicar - ${candidate.role}</div>
+            <div class="email-preview">Hace unos segundos</div>
+          </div>
+        </div>
+
+        <!-- Email Viewer -->
+        <div class="email-viewer">
+          <div class="email-meta">
+            <div class="email-from">
+              <div class="avatar">TF</div>
+              <div class="sender-info">
+                <div class="sender-name">TechFlow Solutions - Equipo de Talento</div>
+                <div class="sender-email">talento@techflow.com</div>
+              </div>
+            </div>
+            <div style="color: #5f6368; font-size: 13px;">Hace unos segundos</div>
+          </div>
+
+          <div class="email-title">🎯 Oportunidad especial para ti</div>
+
+          <div class="email-body">
+            <p>Hola <strong>${candidate.name}</strong>,</p>
+
+            <p>Te escribimos porque tu perfil ha capturado nuestra atención. Tras analizar tu experiencia y habilidades, creemos que eres una excelente opción para una posición de <strong>${candidate.role}</strong> que tenemos disponible en nuestro equipo.</p>
+
+            <div class="highlight-section">
+              <p style="font-weight: 600; margin-bottom: 10px; color: #2563eb; font-size: 14px;">Tu perfil destaca por:</p>
+              <ul>
+                <li>✓ Experiencia comprobada y demostrable en el rol</li>
+                <li>✓ Habilidades altamente alineadas con nuestras necesidades</li>
+                <li>✓ Potencial excepcional de crecimiento en nuestro equipo</li>
+                <li>✓ Valores compartidos con nuestra cultura corporativa</li>
+              </ul>
+            </div>
+
+            <p><strong>¿Qué sigue?</strong> Si te interesa explorar esta oportunidad, te invitamos a hacer clic en el botón de abajo. Será un proceso rápido, transparente y completamente personalizado para ti.</p>
+
+            <button class="cta-button" onclick="alert('¡Excelente! Tu interés ha sido registrado. Pronto nos pondremos en contacto contigo.')">Ver Oportunidad Completa</button>
+
+            <p style="margin-top: 16px;">Cualquier duda, no dudes en escribirnos directamente a este correo. Estamos aquí para ayudarte.</p>
+
+            <div class="signature">
+              <p><strong>Equipo de Talento - TechFlow Solutions</strong></p>
+              <p style="margin-top: 6px;">Buscamos los mejores talentos para tu futuro</p>
+              <p style="margin-top: 10px;">www.techflow.com | talento@techflow.com</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  const blob = new Blob([gmailHtml], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  window.open(url, 'gmail-simulation', 'width=1200,height=800');
+};
+
 const generateMockCandidates = (count: number) => {
   const baseCandidates = [
     {
@@ -451,16 +743,14 @@ export function SerenaIAPanel({ isOpen, onClose, candidate, mode, allCandidates,
                             <button className="flex-1 py-2 bg-white border border-gray-200 rounded-xl text-[11px] font-bold text-gray-700 hover:bg-gray-100 transition-all shadow-sm">
                               Ver perfil
                             </button>
-                            <button 
+                            <button
                               onClick={() => {
-                                if (onImportCandidate) {
-                                  onImportCandidate(candidate);
-                                  toast.success(`${candidate.name} importado correctamente.`);
-                                }
+                                openGmailSimulation(candidate);
+                                toast.success(`Abriendo invitación para ${candidate.name}...`);
                               }}
                               className="flex-1 py-2 bg-blue-600 rounded-xl text-[11px] font-bold text-white hover:bg-blue-700 transition-all shadow-md shadow-blue-100"
                             >
-                              Importar
+                              Enviar invitación
                             </button>
                           </div>
                         </div>

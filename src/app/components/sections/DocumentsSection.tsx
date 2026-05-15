@@ -216,7 +216,7 @@ export function DocumentsSection({ documents: initialDocuments = [], onUploadTri
                     <button
                       onClick={handleUploadClick}
                       className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                      title="Actualizar CV"
+                      title="Actualizar hoja de vida"
                     >
                       <RefreshCw className="w-4 h-4" />
                     </button>

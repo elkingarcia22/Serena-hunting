@@ -74,7 +74,15 @@ const stages = [
   { id: 'seleccionado', name: 'Seleccionado', order: 9 }
 ];
 
-export function JobView({ onCandidateClick }: { onCandidateClick: (id: string) => void }) {
+export function JobView({ 
+  onCandidateClick,
+  candidatesList,
+  setCandidatesList
+}: { 
+  onCandidateClick: (id: string) => void,
+  candidatesList: any[],
+  setCandidatesList: React.Dispatch<React.SetStateAction<any[]>>
+}) {
   const [activeTab, setActiveTab] = useState<'info' | 'candidates' | 'cvs'>('cvs');
   const [searchQuery, setSearchQuery] = useState('');
   const [isSerenaOpen, setIsSerenaOpen] = useState(false);
@@ -88,24 +96,6 @@ export function JobView({ onCandidateClick }: { onCandidateClick: (id: string) =
   const [serenaMode, setSerenaMode] = useState<'global' | 'search'>('global');
   const [isUploading, setIsUploading] = useState(false);
 
-  const [candidatesList, setCandidatesList] = useState<any[]>(
-    candidatesData.map((c, idx) => {
-      let status: 'active' | 'hired' | 'rejected' | 'action_required' = 'active';
-      if (idx % 5 === 0) status = 'hired';
-      else if (idx % 5 === 1) status = 'rejected';
-      else if (idx % 5 === 2) status = 'action_required';
-      else status = 'active';
-      
-      return {
-        ...c,
-        origin: idx % 3 === 0 ? 'Importado por CV' : (idx % 3 === 1 ? 'Serena IA' : 'Vacante'),
-        stage: stages.find(s => s.id === (c.applications?.[0]?.currentStage || 'sourcing'))?.name || 'Sourcing',
-        status: status,
-        identification: `1.0${idx}4.56${idx}.789`,
-        phone: `+57 31${idx} 456 7890`
-      };
-    })
-  );
 
   // Debug Refs
   const rootRef = React.useRef<HTMLDivElement>(null);
@@ -200,89 +190,210 @@ export function JobView({ onCandidateClick }: { onCandidateClick: (id: string) =
 
   const handleImportCandidate = (candidate: any) => {
     console.log("Importando candidato:", candidate);
-    const newId = `cand-sim-001`;
+    const newId = `cand-sim-${Date.now()}`;
     const newCandidate = { 
       ...candidate, 
       id: newId,
+      name: 'Alejandro Martínez Rodríguez',
+      firstName: 'Alejandro',
+      lastName: 'Martínez Rodríguez',
       email: 'alejandro.martinez@email.com',
       phone: '+57 315 987 6543',
       age: 32,
+      identificationNumber: '1.084.567.890',
+      identificationType: 'Cédula de Ciudadanía',
+      nationality: 'Colombiana',
+      linkedin: 'https://www.linkedin.com/in/alejandromartinez',
+      birthDate: '12/08/1992',
       location: 'Medellín, Colombia',
-      yearsExperience: 7,
+      city: 'Medellín',
+      country: 'Colombia',
+      willingToRelocate: true,
+      interestedLocations: ['Bogotá', 'Remote', 'Miami', 'Madrid'],
+      yearsExperience: 8,
+      expectedSalary: '$14.500.000 COP',
+      noticePeriod: '15',
+      noticePeriodUnit: 'Días',
+      currency: 'Peso colombiano (COP)',
+      availability: 'Tiempo completo',
       origin: 'Importado por CV',
-      stage: 'Sourcing',
+      stage: 'Screening Talent',
       status: 'processing' as const,
-      avatar: candidate.avatar || candidate.name.charAt(0),
+      avatar: candidate.avatar || 'AM',
       identification: `1.084.567.890`,
-      description: 'Senior Software Engineer con amplia experiencia en arquitecturas de microservicios y lenguajes de alto rendimiento como Golang y Rust. Apasionado por la optimización de procesos y la escalabilidad.',
+      description: 'Senior Software Engineer con más de 8 años de trayectoria especializado en arquitecturas distribuidas y sistemas de alto rendimiento. Experto en Golang y el ecosistema Cloud Native (Docker, Kubernetes). Enfocado en la excelencia técnica, mentoría de equipos y optimización de procesos críticos de negocio con enfoque en escalabilidad y mantenibilidad.',
       applications: [
         {
-          id: `app-sim-001`,
+          id: `app-sim-${Date.now()}`,
           jobTitle: 'Desarrollador Golang',
           jobLocation: 'Remoto',
-          currentStage: 'sourcing',
+          currentStage: 'screening-talent',
           status: 'active',
           appliedDate: new Date().toISOString().split('T')[0],
-          matchScore: 88,
+          matchScore: 94,
           confidence: 'high',
           scores: {
-            cvScore: 88,
-            serenaScore: 85
+            cvScore: 94,
+            serenaScore: 88
           },
           cvEvaluation: {
-            summary: 'Perfil técnico muy sólido con experiencia directa en el stack solicitado. Se destaca su trayectoria en empresas de alto tráfico y su capacidad de resolución de problemas complejos.',
-            score: 88,
+            summary: 'Perfil técnico excepcional con una alineación del 94% respecto a los requisitos de la vacante. Alejandro demuestra una profundidad técnica sobresaliente en el lenguaje Go y una sólida base en ingeniería de software y sistemas distribuidos.',
+            score: 94,
             criteria: [
-              { label: 'Años de Experiencia', score: 90, status: 'pass' },
-              { label: 'Stack Tecnológico', score: 95, status: 'pass' },
-              { label: 'Educación', score: 80, status: 'pass' }
+              { label: 'Experiencia Seniority', score: 95, status: 'pass' },
+              { label: 'Dominio de Golang', score: 98, status: 'pass' },
+              { label: 'Ecosistema Cloud (K8s/Docker)', score: 92, status: 'pass' },
+              { label: 'Formación Académica', score: 90, status: 'pass' }
             ],
             evaluations: [
-              { category: 'Experiencia', description: 'Más de 7 años en desarrollo backend, con los últimos 4 enfocados exclusivamente en Golang.' },
-              { category: 'Ajuste Cultural', description: 'Demuestra proactividad y enfoque en resultados.' }
+              { category: 'Experiencia Backend', description: 'Posee más de 8 años en desarrollo backend, con una especialización profunda en Go en los últimos 5 años.' },
+              { category: 'Diseño de Sistemas', description: 'Experiencia comprobada diseñando microservicios que manejan altos volúmenes de tráfico.' },
+              { category: 'Ajuste de Stack', description: 'Su dominio de gRPC, PostgreSQL y Redis encaja perfectamente con nuestra arquitectura.' }
             ]
           },
           serenaInterview: {
             transcript: [
-              { role: 'serena', text: 'Hola Alejandro, cuéntanos sobre tu experiencia con concurrencia en Go.', timestamp: '11:00' },
-              { role: 'candidate', text: 'He trabajado extensamente con goroutines y channels para procesar miles de mensajes por segundo en sistemas de mensajería.', timestamp: '11:02' }
+              { role: 'serena', text: 'Hola Alejandro, bienvenido. Veo que tienes mucha experiencia con Go. ¿Podrías explicarme cómo manejas la gestión de memoria y el Garbage Collector en aplicaciones de alto tráfico?', timestamp: '09:00' },
+              { role: 'candidate', text: '¡Claro! En Go, es vital minimizar las asignaciones en el heap. Utilizo sync.Pool para reutilizar objetos y trato de preferir stack allocation cuando es posible. También monitoreo el GOGC y uso herramientas de profiling como pprof para identificar cuellos de botella.', timestamp: '09:02' }
             ],
             questionScores: [
-              { objective: 'Conocimiento Técnico', question: 'Manejo de concurrencia', score: 92, analysis: 'Excelente dominio de las primitivas de Go.' }
+              { objective: 'Profundidad Técnica', question: 'Gestión de memoria en Go', score: 96, analysis: 'Respuesta de nivel senior, entiende perfectamente los mecanismos internos del runtime de Go.' }
             ],
             overallFeedback: {
-              summary: 'Candidato con gran potencial técnico y buena capacidad de comunicación.',
-              strengths: ['Dominio técnico', 'Experiencia en sistemas distribuidos'],
-              improvements: ['Podría profundizar en liderazgo de equipos']
+              summary: 'Candidato con perfil de liderazgo técnico y excelente dominio del stack. Comunicación clara y estructurada.',
+              strengths: ['Arquitecturas distribuidas', 'Optimización de performance', 'Liderazgo técnico'],
+              improvements: ['Puede profundizar en metodologías ágiles a escala']
             }
           }
         }
       ],
       experience: [
         {
+          id: `exp-sim-${Date.now()}-1`,
           company: 'TechFlow Solutions',
-          position: 'Senior Backend Developer',
-          duration: '2021 - Presente',
-          description: 'Liderazgo técnico en la migración de monolito a microservicios en Go.',
-          location: 'Medellín',
-          startDate: '2021',
+          position: 'Senior Backend Engineer (Go)',
+          duration: 'Nov 2020 - Presente',
+          description: 'Liderazgo técnico de la unidad de servicios financieros. Arquitecto principal del sistema de procesamiento de pagos en tiempo real.',
+          location: 'Medellín, Colombia',
+          startDate: 'Noviembre 2020',
           endDate: null,
           current: true,
-          achievements: ['Reducción de latencia en un 30%', 'Implementación de CI/CD con GitHub Actions']
+          achievements: [
+            'Reducción del tiempo de respuesta de la API en un 45% mediante optimización de queries y caché.',
+            'Implementación de una arquitectura basada en eventos usando Apache Kafka.',
+            'Migración exitosa de 15 microservicios a un cluster de Kubernetes administrado.',
+            'Establecimiento de estándares de código y procesos de code review que redujeron bugs en producción en un 30%.'
+          ]
+        },
+        {
+          id: `exp-sim-${Date.now()}-2`,
+          company: 'DataStream Systems',
+          position: 'Senior Backend Developer',
+          duration: 'Ene 2018 - Oct 2020',
+          description: 'Desarrollo de pipelines de procesamiento de datos masivos. Implementación de servicios RESTful y gRPC.',
+          location: 'Bogotá, Colombia',
+          startDate: 'Enero 2018',
+          endDate: 'Octubre 2020',
+          current: false,
+          achievements: [
+            'Diseño de un motor de búsqueda interno que mejoró la velocidad de indexación en un 60%.',
+            'Desarrollo de conectores personalizados para diversas fuentes de datos SQL y NoSQL.',
+            'Optimización de procesos de extracción de datos (ETL) reduciendo el tiempo de ejecución en un 40%.'
+          ]
+        },
+        {
+          id: `exp-sim-${Date.now()}-3`,
+          company: 'SoftInnovate Ltd',
+          position: 'Software Engineer',
+          duration: 'Jun 2016 - Dic 2017',
+          description: 'Desarrollo de aplicaciones web utilizando Java y Spring Boot.',
+          location: 'Medellín, Colombia',
+          startDate: 'Junio 2016',
+          endDate: 'Diciembre 2017',
+          current: false,
+          achievements: [
+            'Participación en el desarrollo del módulo de autenticación centralizada.',
+            'Optimización de procesos de integración continua.',
+            'Liderazgo de un equipo pequeño de 3 desarrolladores junior.'
+          ]
+        },
+        {
+          id: `exp-sim-${Date.now()}-4`,
+          company: 'Global Dev Corp',
+          position: 'Junior Developer',
+          duration: 'Ene 2015 - May 2016',
+          description: 'Desarrollo de componentes frontend y mantenimiento de APIs básicas.',
+          location: 'Medellín, Colombia',
+          startDate: 'Enero 2015',
+          endDate: 'Mayo 2016',
+          current: false,
+          achievements: [
+            'Migración exitosa de interfaces legadas a React.',
+            'Documentación completa de la API interna del proyecto principal.'
+          ]
         }
       ],
       skills: {
-        technical: ['Golang', 'Docker', 'Kubernetes', 'gRPC', 'PostgreSQL', 'Redis'],
-        soft: ['Liderazgo Técnico', 'Resolución de Problemas', 'Mentoria']
+        technical: ['Golang', 'Docker', 'Kubernetes', 'gRPC', 'PostgreSQL', 'Redis', 'Kafka', 'AWS', 'Terraform', 'Prometheus', 'Grafana', 'Git', 'CI/CD', 'Microservicios', 'Arquitectura Hexagonal'],
+        soft: ['Liderazgo Técnico', 'Resolución de Problemas Complejos', 'Mentoría', 'Comunicación Asertiva', 'Pensamiento Estratégico', 'Trabajo en Equipo', 'Adaptabilidad']
       },
       education: [
         {
           institution: 'Universidad Nacional de Colombia',
+          degree: 'Magíster en Ingeniería de Sistemas',
+          year: '2020',
+          description: 'Tesis enfocada en algoritmos de consenso en sistemas distribuidos y tolerancia a fallos.'
+        },
+        {
+          institution: 'Universidad Nacional de Colombia',
           degree: 'Ingeniería de Sistemas',
-          year: '2016'
+          year: '2016',
+          description: 'Énfasis en ingeniería de software, bases de datos y algoritmos avanzados.'
+        },
+        {
+          institution: 'Massachusetts Institute of Technology (Online)',
+          degree: 'Cloud Computing Architecture',
+          year: '2021',
+          description: 'Certificación avanzada en diseño de arquitecturas en la nube.'
+        },
+        {
+          institution: 'AWS Certified',
+          degree: 'Solutions Architect Professional',
+          year: '2023',
+          description: 'Nivel profesional de certificación en arquitectura AWS.'
         }
       ],
-      notes: ['Candidato referido por el equipo interno.', 'Muy buen dominio técnico detectado en la evaluación inicial de CV.']
+      portfolio: {
+        url: 'https://github.com/alejandromartinez-dev',
+        projects: [
+          {
+            name: 'Go-Micro-Starter',
+            description: 'Framework minimalista para microservicios en Go.',
+            impact: 'Utilizado por más de 500 desarrolladores en la comunidad.'
+          },
+          {
+            name: 'DistriCache',
+            description: 'Sistema de caché distribuida con consistencia eventual.',
+            impact: 'Proyecto destacado en la conferencia local de software 2022.'
+          }
+        ]
+      },
+      notes: [
+        'Candidato con perfil de liderazgo claro y gran capacidad de análisis.',
+        'Muy buen dominio de los fundamentales de sistemas distribuidos y performance.',
+        'Activo en la comunidad Open Source de Go y conferencias de tecnología.',
+        'Potencial para escalar a roles de Staff Engineer en el corto plazo.'
+      ],
+      documents: [
+        {
+          id: `doc-sim-${Date.now()}-cv`,
+          name: 'CV_Alejandro_Martinez.pdf',
+          type: 'PDF',
+          size: '2.4 MB',
+          uploadedDate: new Date().toISOString().split('T')[0],
+          uploadedBy: 'Sistema (Importación Automática)'
+        }
+      ]
     };
 
     setCandidatesList(prev => [newCandidate, ...prev]);
@@ -526,13 +637,12 @@ export function JobView({ onCandidateClick }: { onCandidateClick: (id: string) =
               return (
                 <button
                   key={tab}
-                  disabled={tabKey !== 'cvs'}
-                  onClick={() => tabKey === 'cvs' && setActiveTab(tabKey as any)}
+                  onClick={() => setActiveTab(tabKey as any)}
                   className={cn(
                     "relative px-6 py-2 rounded-full text-[11px] font-semibold transition-all duration-300 flex items-center gap-2",
                     isTabActive 
                       ? "bg-white text-blue-600 shadow-sm ring-1 ring-gray-200/20" 
-                      : "text-gray-400 cursor-not-allowed opacity-60"
+                      : "text-gray-400 hover:text-gray-600 cursor-pointer"
                   )}
                 >
                   {isTabActive && <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />}
