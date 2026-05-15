@@ -14,6 +14,8 @@ import {
   CreditCard,
   Edit2,
   AlertCircle,
+  Zap,
+  Upload,
 } from 'lucide-react';
 import { cn } from '../ui/utils';
 import { DatePicker } from '../ui/date-picker';
@@ -545,6 +547,22 @@ export function GeneralInfoSection({
               )}
             </div>
           </div>
+
+          {/* Origen - Solo lectura */}
+          {!isEditMode && (
+            <div className="flex items-start gap-3">
+              <FileText className="w-5 h-5 text-gray-400 mt-2" />
+              <div className="flex-1 min-w-0">
+                <Label>Origen</Label>
+                <p className="text-sm text-gray-900">
+                  {localEditedData.origin === 'Importado por CV' && 'Importación de CV'}
+                  {localEditedData.origin === 'Serena IA' && 'Serena IA'}
+                  {localEditedData.origin === 'Vacante' && 'Vacante / Web'}
+                  {!localEditedData.origin && 'No especificado'}
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
