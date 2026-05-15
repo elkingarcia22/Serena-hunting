@@ -431,6 +431,7 @@ export function SerenaIAPanel({ isOpen, onClose, candidate, mode, allCandidates,
   const isGlobal = mode === 'global';
   const isSearch = mode === 'search';
   const prevSearchTriggerRef = useRef<number>(0);
+  const searchRetryCountRef = useRef<number>(0);
 
   // Efecto para manejar disparadores externos de búsqueda
   useEffect(() => {
@@ -439,21 +440,33 @@ export function SerenaIAPanel({ isOpen, onClose, candidate, mode, allCandidates,
       const isRetrigger = prevSearchTriggerRef.current > 0 && prevSearchTriggerRef.current !== searchTrigger && isOpen;
 
       if (isRetrigger) {
+        searchRetryCountRef.current += 1;
+
         // Error flow: mostrar mensaje de error cuando se intenta buscar nuevamente mientras está activo
         setMessages([]);
         setCurrentTitle('Búsqueda Inteligente');
         setIsTyping(false);
 
+        let errorText = '';
+        if (searchRetryCountRef.current === 1) {
+          // Segunda vez: aviso amigable
+          errorText = `Oops, parece que ya estoy buscando candidatos. Espera a que termine esta búsqueda y luego podemos hacer otra. 😊`;
+        } else {
+          // Tercera vez y siguientes: error de sistema
+          errorText = `Parece que estamos teniendo algunos problemas con la búsqueda. ¿Por qué no lo intentas de nuevo en unos minutos? 💫`;
+        }
+
         const errorMsg: Message = {
           id: `search-error-${searchTrigger}`,
           from: 'ai',
-          text: `Oops, parece que ya estoy buscando candidatos. Espera a que termine esta búsqueda y luego podemos hacer otra. 😊`,
+          text: errorText,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           isActionable: false
         };
         setMessages([errorMsg]);
       } else {
         // Normal search flow: primera vez abriendo búsqueda
+        searchRetryCountRef.current = 0; // Resetear contador
         setMessages([]); // Limpiar historial al iniciar nueva búsqueda inteligente
         setCurrentTitle('Búsqueda Inteligente');
         setIsTyping(true);
@@ -491,6 +504,13 @@ export function SerenaIAPanel({ isOpen, onClose, candidate, mode, allCandidates,
       prevSearchTriggerRef.current = searchTrigger;
     }
   }, [searchTrigger, isOpen]);
+
+  // Resetear contador cuando se cierra el panel
+  useEffect(() => {
+    if (!isOpen) {
+      searchRetryCountRef.current = 0;
+    }
+  }, [isOpen]);
   
   // Encontrar candidatos bloqueados (solo para modo global)
   const blockedCandidates = isGlobal 
