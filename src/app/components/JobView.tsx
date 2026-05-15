@@ -83,7 +83,7 @@ export function JobView({
   candidatesList: any[],
   setCandidatesList: React.Dispatch<React.SetStateAction<any[]>>
 }) {
-  const [activeTab, setActiveTab] = useState<'info' | 'candidates' | 'cvs'>('cvs');
+  const activeTab = 'cvs'; // Solo tab de candidatos es accesible
   const [searchQuery, setSearchQuery] = useState('');
   const [isSerenaOpen, setIsSerenaOpen] = useState(false);
   const [searchTrigger, setSearchTrigger] = useState(0);
@@ -629,23 +629,28 @@ export function JobView({
           {/* Layer 4: Modern Segmented Navigation Tabs */}
           <div className="flex mb-4 bg-gray-100 p-1 rounded-full w-fit border border-gray-200/40">
             {['Info Vacante', 'Pipeline de Selección', 'Candidatos de la vacante'].map((tab) => {
-              const isTabActive = (tab === 'Info Vacante' && activeTab === 'info') || 
-                                 (tab === 'Pipeline de Selección' && activeTab === 'candidates') ||
-                                 (tab === 'Candidatos de la vacante' && activeTab === 'cvs');
-              const tabKey = tab === 'Info Vacante' ? 'info' : tab === 'Pipeline de Selección' ? 'candidates' : 'cvs';
-              
+              const isTabActive = tab === 'Candidatos de la vacante';
+              const isDisabled = tab !== 'Candidatos de la vacante';
+
               return (
                 <button
                   key={tab}
-                  onClick={() => setActiveTab(tabKey as any)}
+                  disabled={isDisabled}
+                  onClick={() => {
+                    if (!isDisabled) {
+                      // No-op, activeTab es siempre 'cvs'
+                    }
+                  }}
                   className={cn(
                     "relative px-6 py-2 rounded-full text-[11px] font-semibold transition-all duration-300 flex items-center gap-2",
-                    isTabActive 
-                      ? "bg-white text-blue-600 shadow-sm ring-1 ring-gray-200/20" 
+                    isTabActive
+                      ? "bg-blue-600 text-white shadow-md"
+                      : isDisabled
+                      ? "text-gray-300 cursor-not-allowed opacity-50"
                       : "text-gray-400 hover:text-gray-600 cursor-pointer"
                   )}
                 >
-                  {isTabActive && <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />}
+                  {isTabActive && <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />}
                   {tab}
                 </button>
               );
@@ -991,7 +996,7 @@ export function JobView({
           </div>
         )}
         
-        {activeTab === 'candidates' && (
+        {false && (
           <div className="flex-1 flex flex-col overflow-hidden">
             {/* Search Bar - Thin */}
             <div className="bg-white border-b border-gray-100 px-6 py-2 flex items-center">
