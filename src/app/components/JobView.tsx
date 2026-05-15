@@ -734,10 +734,21 @@ export function JobView({
                     <thead className="sticky top-0 z-10 bg-gray-50 border-b border-gray-100">
                       <tr>
                         <th className="px-6 py-4 text-[11px] font-semibold text-gray-500">Candidato</th>
-                        <th className="px-6 py-4 text-[11px] font-semibold text-gray-500">Origen</th>
-                        <th className="px-6 py-4 text-[11px] font-semibold text-gray-500">Identificación</th>
-                        <th className="px-6 py-4 text-[11px] font-semibold text-gray-500">Etapa</th>
-                        <th className="px-6 py-4 text-[11px] font-semibold text-gray-500">Estado</th>
+                        {vacancy?.status === 'draft' ? (
+                          <>
+                            <th className="px-6 py-4 text-[11px] font-semibold text-gray-500">Numero de Celular</th>
+                            <th className="px-6 py-4 text-[11px] font-semibold text-gray-500">Fecha de Importación</th>
+                            <th className="px-6 py-4 text-[11px] font-semibold text-gray-500">ID Importación</th>
+                            <th className="px-6 py-4 text-[11px] font-semibold text-gray-500">Origen</th>
+                          </>
+                        ) : (
+                          <>
+                            <th className="px-6 py-4 text-[11px] font-semibold text-gray-500">Origen</th>
+                            <th className="px-6 py-4 text-[11px] font-semibold text-gray-500">Identificación</th>
+                            <th className="px-6 py-4 text-[11px] font-semibold text-gray-500">Etapa</th>
+                            <th className="px-6 py-4 text-[11px] font-semibold text-gray-500">Estado</th>
+                          </>
+                        )}
                         <th className="px-6 py-4 text-[11px] font-semibold text-gray-500 text-right">Acciones</th>
                       </tr>
                     </thead>
@@ -769,64 +780,106 @@ export function JobView({
                             </td>
                           </tr>
                         ) : (
-                          filteredCandidates.map((candidate) => (
-                            <tr 
-                              key={candidate.id} 
-                              onClick={() => onCandidateClick(candidate.id)}
-                              className="hover:bg-gray-50 transition-colors group cursor-pointer"
-                            >
-                          <td className="px-6 py-4">
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold text-xs">
-                                {candidate.name.charAt(0)}
+                          (() => {
+                            const tableCandidates = vacancy?.status === 'draft'
+                              ? filteredCandidates.filter(c => c.origin === 'Serena IA' || c.origin === 'Importado por CV')
+                              : filteredCandidates;
+                            return tableCandidates.map((candidate) => (
+                              <tr
+                                key={candidate.id}
+                                onClick={() => onCandidateClick(candidate.id)}
+                                className="hover:bg-gray-50 transition-colors group cursor-pointer"
+                              >
+                            <td className="px-6 py-4">
+                              <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold text-xs">
+                                  {candidate.name.charAt(0)}
+                                </div>
+                                <span className="text-sm font-semibold text-gray-900">{candidate.name}</span>
                               </div>
-                              <span className="text-sm font-semibold text-gray-900">{candidate.name}</span>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <Badge className={cn(
-                              "text-[10px] px-2 py-0.5 border-none font-semibold rounded-lg",
-                              candidate.origin === 'Serena IA' ? "bg-indigo-50 text-indigo-600" : "bg-gray-100 text-gray-600"
-                            )}>
-                              {candidate.origin === 'Serena IA' && <Sparkles className="w-3 h-3 mr-1 inline" />}
-                              {candidate.origin}
-                            </Badge>
-                          </td>
-                          <td className="px-6 py-4">
-                            <div 
-                              onClick={(e) => handleCopy(e, candidate.identification, 'Identificación')}
-                              className="group/item flex items-center gap-2 text-xs font-semibold text-gray-500 hover:text-blue-600 transition-colors"
-                            >
-                              {candidate.identification}
-                              <Copy className="w-3 h-3 opacity-0 group-hover/item:opacity-100 transition-opacity" />
-                            </div>
-                          </td>
-
-                          <td className="px-6 py-4">
-                            <Badge variant="outline" className="text-[10px] border-gray-200 text-gray-500 font-semibold px-2 py-0.5 rounded-lg bg-white">
-                              {candidate.stage}
-                            </Badge>
-                          </td>
-                          <td className="px-6 py-4">
-                            <Badge variant="outline" className={cn(
-                              "text-[10px] px-2 py-0.5 border-none font-semibold rounded-lg transition-all duration-300",
-                              candidate.status === 'processing' ? "bg-blue-50 text-blue-600 animate-pulse" :
-                              candidate.status === 'active' ? "bg-emerald-50 text-emerald-600" :
-                              candidate.status === 'hired' ? "bg-blue-50 text-blue-600" :
-                              candidate.status === 'action_required' ? "bg-amber-50 text-amber-600" :
-                              "bg-rose-50 text-rose-600"
-                            )}>
-                              {candidate.status === 'processing' ? (
-                                <span className="flex items-center gap-1.5">
-                                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                  En progreso
-                                </span>
-                              ) : candidate.status === 'active' ? 'Activo' : 
-                               candidate.status === 'hired' ? 'Contratado' : 
-                               candidate.status === 'action_required' ? 'Acción Requerida' : 
-                               'Descartado'}
-                            </Badge>
-                          </td>
+                            </td>
+                            {vacancy?.status === 'draft' ? (
+                              <>
+                                <td className="px-6 py-4">
+                                  <div
+                                    onClick={(e) => handleCopy(e, candidate.phone, 'Número de Celular')}
+                                    className="group/item flex items-center gap-2 text-xs font-semibold text-gray-500 hover:text-blue-600 transition-colors"
+                                  >
+                                    {candidate.phone}
+                                    <Copy className="w-3 h-3 opacity-0 group-hover/item:opacity-100 transition-opacity" />
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4">
+                                  <span className="text-xs font-semibold text-gray-600">
+                                    {candidate.importDate ? new Date(candidate.importDate).toLocaleDateString('es-CO') : 'N/A'}
+                                  </span>
+                                </td>
+                                <td className="px-6 py-4">
+                                  <div
+                                    onClick={(e) => handleCopy(e, candidate.importId, 'ID Importación')}
+                                    className="group/item flex items-center gap-2 text-xs font-semibold text-gray-500 hover:text-blue-600 transition-colors"
+                                  >
+                                    {candidate.importId}
+                                    <Copy className="w-3 h-3 opacity-0 group-hover/item:opacity-100 transition-opacity" />
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4">
+                                  <Badge className={cn(
+                                    "text-[10px] px-2 py-0.5 border-none font-semibold rounded-lg",
+                                    candidate.origin === 'Serena IA' ? "bg-indigo-50 text-indigo-600" : "bg-gray-100 text-gray-600"
+                                  )}>
+                                    {candidate.origin === 'Serena IA' && <Sparkles className="w-3 h-3 mr-1 inline" />}
+                                    {candidate.origin}
+                                  </Badge>
+                                </td>
+                              </>
+                            ) : (
+                              <>
+                                <td className="px-6 py-4">
+                                  <Badge className={cn(
+                                    "text-[10px] px-2 py-0.5 border-none font-semibold rounded-lg",
+                                    candidate.origin === 'Serena IA' ? "bg-indigo-50 text-indigo-600" : "bg-gray-100 text-gray-600"
+                                  )}>
+                                    {candidate.origin === 'Serena IA' && <Sparkles className="w-3 h-3 mr-1 inline" />}
+                                    {candidate.origin}
+                                  </Badge>
+                                </td>
+                                <td className="px-6 py-4">
+                                  <div
+                                    onClick={(e) => handleCopy(e, candidate.identification, 'Identificación')}
+                                    className="group/item flex items-center gap-2 text-xs font-semibold text-gray-500 hover:text-blue-600 transition-colors"
+                                  >
+                                    {candidate.identification}
+                                    <Copy className="w-3 h-3 opacity-0 group-hover/item:opacity-100 transition-opacity" />
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4">
+                                  <Badge variant="outline" className="text-[10px] border-gray-200 text-gray-500 font-semibold px-2 py-0.5 rounded-lg bg-white">
+                                    {candidate.stage}
+                                  </Badge>
+                                </td>
+                                <td className="px-6 py-4">
+                                  <Badge variant="outline" className={cn(
+                                    "text-[10px] px-2 py-0.5 border-none font-semibold rounded-lg transition-all duration-300",
+                                    candidate.status === 'processing' ? "bg-blue-50 text-blue-600 animate-pulse" :
+                                    candidate.status === 'active' ? "bg-emerald-50 text-emerald-600" :
+                                    candidate.status === 'hired' ? "bg-blue-50 text-blue-600" :
+                                    candidate.status === 'action_required' ? "bg-amber-50 text-amber-600" :
+                                    "bg-rose-50 text-rose-600"
+                                  )}>
+                                    {candidate.status === 'processing' ? (
+                                      <span className="flex items-center gap-1.5">
+                                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                        En progreso
+                                      </span>
+                                    ) : candidate.status === 'active' ? 'Activo' :
+                                     candidate.status === 'hired' ? 'Contratado' :
+                                     candidate.status === 'action_required' ? 'Acción Requerida' :
+                                     'Descartado'}
+                                  </Badge>
+                                </td>
+                              </>
+                            )}
                           <td className="px-6 py-4 text-right">
                             <div onClick={(e) => e.stopPropagation()}>
                               <DropdownMenu>
@@ -964,8 +1017,10 @@ export function JobView({
                               </DropdownMenu>
                             </div>
                           </td>
-                        </tr>
-                      )))}
+                            </tr>
+                            ));
+                          })()
+                        )}
                     </tbody>
                   </table>
                 </div>

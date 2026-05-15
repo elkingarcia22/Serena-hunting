@@ -57,7 +57,9 @@ export function JobPage() {
         stage: stages.find(s => s.id === (c.applications?.[0]?.currentStage || 'sourcing'))?.name || 'Sourcing',
         status: status,
         identification: `1.0${idx}4.56${idx}.789`,
-        phone: `+57 31${idx} 456 7890`
+        phone: `+57 31${idx} 456 7890`,
+        importDate: c.applications?.[0]?.appliedDate || new Date().toISOString(),
+        importId: `IMP-${String(idx + 1).padStart(5, '0')}`
       };
     })
   );
