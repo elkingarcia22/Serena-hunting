@@ -18,8 +18,29 @@ const stages = [
   { id: 'seleccionado', name: 'Seleccionado', order: 9 }
 ];
 
+// Interfaz para la vacante
+interface Vacancy {
+  id: string;
+  versionId: string;
+  title: string;
+  status: 'published' | 'draft';
+  createdAt: Date;
+}
+
 export function JobPage() {
   const [selectedCandidateId, setSelectedCandidateId] = useState<string | null>(null);
+
+  // Estado de versiones de la vacante
+  const [vacancies, setVacancies] = useState<Vacancy[]>([
+    {
+      id: 'job-1',
+      versionId: 'v1-published',
+      title: 'Desarrollador Golang',
+      status: 'published',
+      createdAt: new Date()
+    }
+  ]);
+  const [activeVacancyVersionId, setActiveVacancyVersionId] = useState<string>('v1-published');
 
   // Estado global de candidatos para esta página
   const [candidatesList, setCandidatesList] = useState<any[]>(
@@ -73,12 +94,53 @@ export function JobPage() {
     }
   };
 
+  // Obtener la vacante activa
+  const activeVacancy = vacancies.find(v => v.versionId === activeVacancyVersionId);
+
+  // Manejar publicar - crear una versión duplicada
+  const handlePublish = () => {
+    const currentVacancy = activeVacancy;
+    if (!currentVacancy) return;
+
+    // Si es versión publicada, crear borrador
+    if (currentVacancy.status === 'published') {
+      const newVersionId = `v${Date.now()}-draft`;
+      const newVacancy: Vacancy = {
+        ...currentVacancy,
+        versionId: newVersionId,
+        status: 'draft'
+      };
+      setVacancies([...vacancies, newVacancy]);
+      setActiveVacancyVersionId(newVersionId);
+    } else {
+      // Si es borrador, marcar como publicada y volver a la versión publicada
+      const publishedVersionId = vacancies.find(v => v.id === currentVacancy.id && v.status === 'published')?.versionId;
+      if (publishedVersionId) {
+        // Marcar el borrador como publicado y la versión anterior como borrador
+        setVacancies(
+          vacancies.map(v => {
+            if (v.versionId === currentVacancy.versionId) {
+              return { ...v, status: 'published' };
+            }
+            if (v.versionId === publishedVersionId) {
+              return { ...v, status: 'draft' };
+            }
+            return v;
+          })
+        );
+        setActiveVacancyVersionId(publishedVersionId);
+      }
+    }
+  };
+
   return (
     <>
-      <JobView 
-        onCandidateClick={handleCandidateClick} 
+      <JobView
+        onCandidateClick={handleCandidateClick}
         candidatesList={candidatesList}
         setCandidatesList={setCandidatesList}
+        vacancy={activeVacancy}
+        onPublish={handlePublish}
       />
       
       {selectedCandidateId && (

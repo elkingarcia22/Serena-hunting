@@ -74,14 +74,26 @@ const stages = [
   { id: 'seleccionado', name: 'Seleccionado', order: 9 }
 ];
 
-export function JobView({ 
+interface Vacancy {
+  id: string;
+  versionId: string;
+  title: string;
+  status: 'published' | 'draft';
+  createdAt: Date;
+}
+
+export function JobView({
   onCandidateClick,
   candidatesList,
-  setCandidatesList
-}: { 
+  setCandidatesList,
+  vacancy,
+  onPublish
+}: {
   onCandidateClick: (id: string) => void,
   candidatesList: any[],
-  setCandidatesList: React.Dispatch<React.SetStateAction<any[]>>
+  setCandidatesList: React.Dispatch<React.SetStateAction<any[]>>,
+  vacancy?: Vacancy,
+  onPublish?: () => void
 }) {
   const activeTab = 'cvs'; // Solo tab de candidatos es accesible
   const [searchQuery, setSearchQuery] = useState('');
@@ -497,15 +509,22 @@ export function JobView({
               </Button>
               <div className="flex items-center gap-4 min-w-0">
                 <h1 className="text-3xl font-semibold text-gray-900 tracking-tight truncate">
-                  Desarrollador Golang
+                  {vacancy?.title || 'Desarrollador Golang'}
                 </h1>
-                <Badge className="bg-emerald-50 text-emerald-600 border-none text-[10px] px-3 py-1 rounded-full font-semibold flex items-center gap-1.5 flex-shrink-0">
-                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  Publicada
-                </Badge>
+                <button
+                  onClick={onPublish}
+                  className={cn(
+                    "border-none text-[10px] px-3 py-1 rounded-full font-semibold flex items-center gap-1.5 flex-shrink-0 transition-all cursor-pointer hover:scale-105",
+                    vacancy?.status === 'published'
+                      ? "bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
+                      : "bg-amber-50 text-amber-600 hover:bg-amber-100"
+                  )}>
+                  <div className={cn("w-1.5 h-1.5 rounded-full animate-pulse", vacancy?.status === 'published' ? "bg-emerald-500" : "bg-amber-500")} />
+                  {vacancy?.status === 'published' ? 'Publicada' : 'Borrador'}
+                </button>
                 <Badge className="bg-gray-100 text-gray-600 border-none text-[10px] px-3 py-1 rounded-full font-semibold flex items-center gap-1.5 flex-shrink-0">
                   <Eye className="w-3.5 h-3.5" />
-                  Pública
+                  {vacancy?.status === 'published' ? 'Pública' : 'Privada'}
                 </Badge>
               </div>
             </div>
