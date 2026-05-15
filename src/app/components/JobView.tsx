@@ -428,12 +428,14 @@ export function JobView({
 
     // Simular procesamiento de importación CV - Error en segunda importación
     setTimeout(() => {
+      const importId = `IMP-${String(Math.random()).substring(2, 7)}`;
       if (newCount === 2) {
         // Segunda importación genera error
         setCandidatesList(prev =>
           prev.map(c => c.id === newId ? {
             ...c,
-            importStatus: 'Error'
+            importStatus: 'Error',
+            importId: importId
           } : c)
         );
         toast.error(`Error al importar ${candidate.name}. Por favor, intenta de nuevo.`);
@@ -445,7 +447,7 @@ export function JobView({
             status: 'active',
             importStatus: 'Importado',
             importDate: new Date().toISOString(),
-            importId: `IMP-${String(Math.random()).substring(2, 7)}`
+            importId: importId
           } : c)
         );
         toast.success(`${candidate.name} importado correctamente`);
@@ -827,12 +829,16 @@ export function JobView({
                                 className="hover:bg-gray-50 transition-colors group cursor-pointer"
                               >
                             <td className="px-6 py-4">
-                              <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold text-xs">
-                                  {candidate.name.charAt(0)}
+                              {candidate.importStatus === 'Error' ? (
+                                <span className="text-xs font-semibold text-gray-400">--</span>
+                              ) : (
+                                <div className="flex items-center gap-3">
+                                  <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold text-xs">
+                                    {candidate.name.charAt(0)}
+                                  </div>
+                                  <span className="text-sm font-semibold text-gray-900">{candidate.name}</span>
                                 </div>
-                                <span className="text-sm font-semibold text-gray-900">{candidate.name}</span>
-                              </div>
+                              )}
                             </td>
                             {vacancy?.status === 'draft' ? (
                               <>
