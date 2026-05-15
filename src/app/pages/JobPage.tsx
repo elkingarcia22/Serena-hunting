@@ -51,21 +51,31 @@ export function JobPage() {
       else if (idx % 5 === 2) status = 'action_required';
       else status = 'active';
       
+      const origin = idx % 3 === 0 ? 'Importado por CV' : (idx % 3 === 1 ? 'Serena IA' : 'Vacante');
+      const stageName = stages.find(s => s.id === (c.applications?.[0]?.currentStage || 'sourcing'))?.name || 'Sourcing';
+
+      let importStatus = 'Importado';
+      if (origin === 'Serena IA') {
+        const earlyStages = ['Sourcing', 'Screening'];
+        importStatus = earlyStages.includes(stageName) ? 'Invitación enviada' : 'Importado';
+      }
+
       return {
         ...c,
-        origin: idx % 3 === 0 ? 'Importado por CV' : (idx % 3 === 1 ? 'Serena IA' : 'Vacante'),
-        stage: stages.find(s => s.id === (c.applications?.[0]?.currentStage || 'sourcing'))?.name || 'Sourcing',
+        origin: origin,
+        stage: stageName,
         status: status,
         identification: `1.0${idx}4.56${idx}.789`,
         phone: `+57 31${idx} 456 7890`,
         importDate: c.applications?.[0]?.appliedDate || new Date().toISOString(),
-        importId: `IMP-${String(idx + 1).padStart(5, '0')}`
+        importId: `IMP-${String(idx + 1).padStart(5, '0')}`,
+        importStatus: importStatus
       };
     })
   );
 
   // Lista de candidatos activos ordenados (usando la lista enriquecida)
-  const activeCandidates = candidatesList.filter(c => 
+  const activeCandidates = candidatesList.filter(c =>
     c.applications?.some((app: any) => app.status === 'active' || app.status === 'hired')
   );
   

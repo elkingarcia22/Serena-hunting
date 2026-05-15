@@ -410,14 +410,28 @@ export function JobView({
       ]
     };
 
-    setCandidatesList(prev => [newCandidate, ...prev]);
+    setCandidatesList(prev => [
+      {
+        ...newCandidate,
+        importStatus: 'En progreso',
+        importDate: null,
+        importId: null
+      },
+      ...prev
+    ]);
 
-    // Simular procesamiento
+    // Simular procesamiento de importación CV
     setTimeout(() => {
-      setCandidatesList(prev => 
-        prev.map(c => c.id === newId ? { ...c, status: 'active' } : c)
+      setCandidatesList(prev =>
+        prev.map(c => c.id === newId ? {
+          ...c,
+          status: 'active',
+          importStatus: 'Importado',
+          importDate: new Date().toISOString(),
+          importId: `IMP-${String(Math.random()).substring(2, 7)}`
+        } : c)
       );
-      toast.success(`${candidate.name} procesado correctamente`);
+      toast.success(`${candidate.name} importado correctamente`);
     }, 3000);
   };
   const [expandedSections, setExpandedSections] = useState<Record<string, { active: boolean; discarded: boolean }>>({
@@ -740,6 +754,7 @@ export function JobView({
                             <th className="px-6 py-4 text-[11px] font-semibold text-gray-500">Fecha de Importación</th>
                             <th className="px-6 py-4 text-[11px] font-semibold text-gray-500">ID Importación</th>
                             <th className="px-6 py-4 text-[11px] font-semibold text-gray-500">Origen</th>
+                            <th className="px-6 py-4 text-[11px] font-semibold text-gray-500">Estado de Importación</th>
                           </>
                         ) : (
                           <>
@@ -787,7 +802,10 @@ export function JobView({
                             return tableCandidates.map((candidate) => (
                               <tr
                                 key={candidate.id}
-                                onClick={() => onCandidateClick(candidate.id)}
+                                onClick={() => {
+                                  if (vacancy?.status === 'draft' && candidate.importStatus !== 'Importado') return;
+                                  onCandidateClick(candidate.id);
+                                }}
                                 className="hover:bg-gray-50 transition-colors group cursor-pointer"
                               >
                             <td className="px-6 py-4">
@@ -815,13 +833,17 @@ export function JobView({
                                   </span>
                                 </td>
                                 <td className="px-6 py-4">
-                                  <div
-                                    onClick={(e) => handleCopy(e, candidate.importId, 'ID Importación')}
-                                    className="group/item flex items-center gap-2 text-xs font-semibold text-gray-500 hover:text-blue-600 transition-colors"
-                                  >
-                                    {candidate.importId}
-                                    <Copy className="w-3 h-3 opacity-0 group-hover/item:opacity-100 transition-opacity" />
-                                  </div>
+                                  {candidate.importId ? (
+                                    <div
+                                      onClick={(e) => handleCopy(e, candidate.importId, 'ID Importación')}
+                                      className="group/item flex items-center gap-2 text-xs font-semibold text-gray-500 hover:text-blue-600 transition-colors"
+                                    >
+                                      {candidate.importId}
+                                      <Copy className="w-3 h-3 opacity-0 group-hover/item:opacity-100 transition-opacity" />
+                                    </div>
+                                  ) : (
+                                    <span className="text-xs font-semibold text-gray-400">Procesando...</span>
+                                  )}
                                 </td>
                                 <td className="px-6 py-4">
                                   <Badge className={cn(
@@ -830,6 +852,23 @@ export function JobView({
                                   )}>
                                     {candidate.origin === 'Serena IA' && <Sparkles className="w-3 h-3 mr-1 inline" />}
                                     {candidate.origin}
+                                  </Badge>
+                                </td>
+                                <td className="px-6 py-4">
+                                  <Badge className={cn(
+                                    "text-[10px] px-2 py-0.5 border-none font-semibold rounded-lg transition-all duration-300",
+                                    candidate.importStatus === 'En progreso' ? "bg-blue-50 text-blue-600 animate-pulse" :
+                                    candidate.importStatus === 'Invitación enviada' ? "bg-blue-50 text-blue-600" :
+                                    "bg-emerald-50 text-emerald-600"
+                                  )}>
+                                    {candidate.importStatus === 'En progreso' ? (
+                                      <span className="flex items-center gap-1.5">
+                                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                        En progreso
+                                      </span>
+                                    ) : (
+                                      candidate.importStatus
+                                    )}
                                   </Badge>
                                 </td>
                               </>
@@ -882,28 +921,59 @@ export function JobView({
                             )}
                           <td className="px-6 py-4 text-right">
                             <div onClick={(e) => e.stopPropagation()}>
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button 
-                                    variant="ghost" 
-                                    size="icon" 
-                                    className="w-8 h-8 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all"
-                                  >
-                                    <MoreVertical className="w-4 h-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="w-64 p-2 rounded-2xl shadow-2xl border-gray-100 bg-white/95 backdrop-blur-sm">
-                                  {/* Core Actions */}
-                                  <DropdownMenuItem 
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      onCandidateClick(candidate.id);
-                                    }}
-                                    className="flex items-center gap-3 p-2.5 cursor-pointer rounded-xl hover:bg-blue-50 transition-colors group"
-                                  >
-                                    <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-blue-600" />
-                                    <span className="text-xs font-semibold text-gray-600 group-hover:text-blue-600">Ver perfil completo</span>
-                                  </DropdownMenuItem>
+                              {vacancy?.status === 'draft' ? (
+                                <>
+                                  {candidate.importStatus === 'Importado' && (
+                                    <Button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        onCandidateClick(candidate.id);
+                                      }}
+                                      className="bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200 text-xs font-semibold px-2 py-1 rounded-md transition-colors"
+                                      size="sm"
+                                    >
+                                      <ExternalLink className="w-3.5 h-3.5 mr-1 inline" />
+                                      Ver candidato
+                                    </Button>
+                                  )}
+                                  {candidate.importStatus === 'Invitación enviada' && (
+                                    <Button
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        toast.info('Invitación reenviada a ' + candidate.email);
+                                      }}
+                                      className="bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200 text-xs font-semibold px-2 py-1 rounded-md transition-colors"
+                                      size="sm"
+                                    >
+                                      <Mail className="w-3.5 h-3.5 mr-1 inline" />
+                                      Reenviar invitación
+                                    </Button>
+                                  )}
+                                </>
+                              ) : (
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="w-8 h-8 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all"
+                                    >
+                                      <MoreVertical className="w-4 h-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end" className="w-64 p-2 rounded-2xl shadow-2xl border-gray-100 bg-white/95 backdrop-blur-sm">
+                                    {/* Core Actions */}
+                                    <DropdownMenuItem
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        onCandidateClick(candidate.id);
+                                      }}
+                                      className="flex items-center gap-3 p-2.5 cursor-pointer rounded-xl hover:bg-blue-50 transition-colors group"
+                                    >
+                                      <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-blue-600" />
+                                      <span className="text-xs font-semibold text-gray-600 group-hover:text-blue-600">Ver perfil completo</span>
+                                    </DropdownMenuItem>
                                   
                                   <div className="my-1 h-px bg-gray-100" />
                                   
@@ -1015,6 +1085,7 @@ export function JobView({
                                   </DropdownMenuItem>
                                 </DropdownMenuContent>
                               </DropdownMenu>
+                              )}
                             </div>
                           </td>
                             </tr>
