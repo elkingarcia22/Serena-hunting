@@ -416,8 +416,9 @@ export function JobView({
     const newCount = importCount + 1;
     setImportCount(newCount);
 
-    // Solo agregar a la lista si es la primera importación (éxito)
-    if (newCount === 1) {
+    // Agregar a la lista: siempre en draft, solo éxito en published
+    const isDraft = vacancy?.status === 'draft';
+    if (isDraft || (newCount === 1 && !isDraft)) {
       setCandidatesList(prev => [
         {
           ...newCandidate,
