@@ -859,9 +859,7 @@ export function JobView({
                                   )}
                                 </td>
                                 <td className="px-6 py-4">
-                                  {candidate.importStatus === 'Error' ? (
-                                    <span className="text-xs font-semibold text-gray-400">--</span>
-                                  ) : candidate.importId ? (
+                                  {candidate.importId ? (
                                     <div
                                       onClick={(e) => handleCopy(e, candidate.importId, 'ID Importación')}
                                       className="group/item flex items-center gap-2 text-xs font-semibold text-gray-500 hover:text-blue-600 transition-colors"
