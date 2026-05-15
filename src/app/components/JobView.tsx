@@ -112,7 +112,6 @@ export function JobView({
   const [selectedFile, setSelectedFile] = useState<{ name: string; size: string } | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [importCount, setImportCount] = useState(0);
-  const [deletedFiles, setDeletedFiles] = useState<Set<string>>(new Set());
 
 
   // Debug Refs
@@ -206,7 +205,7 @@ export function JobView({
     toast.success(`${label} copiado`);
   };
 
-  const handleImportCandidate = (candidate: any, isFormatError: boolean = false) => {
+  const handleImportCandidate = (candidate: any) => {
     console.log("Importando candidato:", candidate);
     const newId = `cand-sim-${Date.now()}`;
     const newCandidate = { 
@@ -433,21 +432,7 @@ export function JobView({
     setTimeout(() => {
       const importId = `IMP-${String(Math.random()).substring(2, 7)}`;
 
-      if (isFormatError) {
-        // Error de formato - archivo eliminado y vuelto a cargar
-        if (isDraft) {
-          setCandidatesList(prev =>
-            prev.map(c => c.id === newId ? {
-              ...c,
-              importStatus: 'Error',
-              importId: importId
-            } : c)
-          );
-        } else {
-          setCandidatesList(prev => prev.filter(c => c.id !== newId));
-        }
-        toast.error(`Formato no válido. El archivo que intentas subir no es un PDF válido o ha sido modificado.`);
-      } else if (newCount === 1) {
+      if (newCount === 1) {
         // Primera importación: éxito
         setCandidatesList(prev =>
           prev.map(c => c.id === newId ? {
@@ -1424,13 +1409,7 @@ export function JobView({
 
                     {/* Remove Button */}
                     <button
-                      onClick={() => {
-                        if (selectedFile) {
-                          const fileKey = `${selectedFile.name}-${selectedFile.size}`;
-                          setDeletedFiles(prev => new Set(prev).add(fileKey));
-                        }
-                        setSelectedFile(null);
-                      }}
+                      onClick={() => setSelectedFile(null)}
                       className="text-gray-400 hover:text-red-600 transition-colors"
                       title="Remover documento"
                     >
@@ -1477,14 +1456,11 @@ export function JobView({
               disabled={!hasAcceptedTerms || !selectedFile}
               onClick={() => {
                 if (!selectedFile) return;
-                const fileKey = `${selectedFile.name}-${selectedFile.size}`;
-                const isFileDeleted = deletedFiles.has(fileKey);
-
                 setIsProcessing(true);
                 setIsUploading(true);
                 // Simular procesamiento del documento
                 setTimeout(() => {
-                  handleImportCandidate({ name: 'Alejandro Martínez', avatar: 'AM' }, isFileDeleted);
+                  handleImportCandidate({ name: 'Alejandro Martínez', avatar: 'AM' });
                   setIsProcessing(false);
                   setIsUploading(false);
                   setSelectedFile(null);
