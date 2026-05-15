@@ -447,7 +447,7 @@ export function SerenaIAPanel({ isOpen, onClose, candidate, mode, allCandidates,
         const errorMsg: Message = {
           id: `search-error-${searchTrigger}`,
           from: 'ai',
-          text: `No se puede iniciar la búsqueda. Error humano. Por favor intenta más tarde.`,
+          text: `Oops, parece que ya estoy buscando candidatos. Espera a que termine esta búsqueda y luego podemos hacer otra. 😊`,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           isActionable: false
         };
