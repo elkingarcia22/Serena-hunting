@@ -1185,10 +1185,9 @@ export function JobView({
           </div>
 
           <DialogFooter className="px-12 py-8 bg-gray-50/50 border-t border-gray-100 flex items-center justify-between sm:justify-between">
-            <Button 
-              variant="outline" 
+            <Button
               onClick={() => setIsImportModalOpen(false)}
-              className="h-[52px] px-10 rounded-2xl border-gray-200 text-gray-500 font-bold hover:bg-white hover:text-gray-700 hover:border-gray-300 transition-all bg-transparent"
+              className="h-[52px] px-10 rounded-2xl bg-white text-blue-600 font-bold hover:bg-gray-50 border border-gray-200 transition-all shadow-sm hover:shadow-md"
             >
               Cancelar
             </Button>
