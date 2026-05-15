@@ -649,9 +649,10 @@ export function JobView({
 
           {/* Layer 4: Modern Segmented Navigation Tabs */}
           <div className="flex mb-4 bg-gray-100 p-1 rounded-full w-fit border border-gray-200/40">
-            {['Info Vacante', 'Pipeline de Selección', 'Candidatos de la vacante'].map((tab) => {
-              const isTabActive = tab === 'Candidatos de la vacante';
-              const isDisabled = tab !== 'Candidatos de la vacante';
+            {['Info Vacante', 'Pipeline de Selección', vacancy?.status === 'draft' ? 'Candidatos importados' : 'Candidatos de la vacante'].map((tab) => {
+              const candidateTabLabel = vacancy?.status === 'draft' ? 'Candidatos importados' : 'Candidatos de la vacante';
+              const isTabActive = tab === candidateTabLabel;
+              const isDisabled = tab !== candidateTabLabel;
 
               return (
                 <button
@@ -980,7 +981,7 @@ export function JobView({
                 <div className="w-20 h-20 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
                   <Users className="w-10 h-10" />
                 </div>
-                <h3 className="text-2xl font-semibold text-gray-900 mb-2 tracking-tight">Candidatos de la vacante</h3>
+                <h3 className="text-2xl font-semibold text-gray-900 mb-2 tracking-tight">{vacancy?.status === 'draft' ? 'Candidatos importados' : 'Candidatos de la vacante'}</h3>
                 <p className="text-sm text-gray-500 mb-10 max-w-[280px] mx-auto leading-relaxed">
                   Aún no tienes candidatos. Comienza importando CVs o usando nuestra búsqueda inteligente con IA.
                 </p>
