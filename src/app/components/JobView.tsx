@@ -416,19 +416,16 @@ export function JobView({
     const newCount = importCount + 1;
     setImportCount(newCount);
 
-    // Agregar a la lista: siempre en draft, solo éxito en published
-    const isDraft = vacancy?.status === 'draft';
-    if (isDraft || (newCount === 1 && !isDraft)) {
-      setCandidatesList(prev => [
-        {
-          ...newCandidate,
-          importStatus: 'En progreso',
-          importDate: null,
-          importId: null
-        },
-        ...prev
-      ]);
-    }
+    // Siempre agregar a la lista como "En progreso"
+    setCandidatesList(prev => [
+      {
+        ...newCandidate,
+        importStatus: 'En progreso',
+        importDate: null,
+        importId: null
+      },
+      ...prev
+    ]);
 
     // Simular procesamiento de importación CV - Diferentes errores según el contador
     setTimeout(() => {
@@ -447,16 +444,20 @@ export function JobView({
         );
         toast.success(`${candidate.name} importado correctamente`);
       } else if (newCount === 2) {
-        // Segunda importación: Error de sistema - solo toast, no aparece en tabla
+        // Segunda importación: Error de sistema - mostrar toast y remover de tabla
+        setCandidatesList(prev => prev.filter(c => c.id !== newId));
         toast.error(`Error de sistema al importar ${candidate.name}. Por favor, intenta de nuevo.`);
       } else if (newCount === 3) {
         // Tercera importación: Error de duplicado en la vacante
+        setCandidatesList(prev => prev.filter(c => c.id !== newId));
         toast.error(`Este candidato ya existe en la vacante. Por favor, intenta con otro CV.`);
       } else if (newCount === 4) {
         // Cuarta importación: Error - ya existe en la empresa
+        setCandidatesList(prev => prev.filter(c => c.id !== newId));
         toast.error(`Este candidato ya existe en la empresa. Solo puedes agregarlo o invitarlo a esta vacante.`);
       } else if (newCount >= 5) {
         // Quinta importación en adelante: Error de extracción de datos
+        setCandidatesList(prev => prev.filter(c => c.id !== newId));
         toast.error(`No pudimos extraer datos del candidato. Asegurate de que lo que estás subiendo es un PDF de un CV.`);
       }
     }, 3000);
