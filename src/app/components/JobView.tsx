@@ -428,6 +428,7 @@ export function JobView({
     ]);
 
     // Simular procesamiento de importación CV - Diferentes errores según el contador
+    const isDraft = vacancy?.status === 'draft';
     setTimeout(() => {
       const importId = `IMP-${String(Math.random()).substring(2, 7)}`;
 
@@ -444,20 +445,62 @@ export function JobView({
         );
         toast.success(`${candidate.name} importado correctamente`);
       } else if (newCount === 2) {
-        // Segunda importación: Error de sistema - mostrar toast y remover de tabla
-        setCandidatesList(prev => prev.filter(c => c.id !== newId));
+        // Segunda importación: Error de sistema
+        if (isDraft) {
+          // En draft: mantener en tabla con estado Error
+          setCandidatesList(prev =>
+            prev.map(c => c.id === newId ? {
+              ...c,
+              importStatus: 'Error',
+              importId: importId
+            } : c)
+          );
+        } else {
+          // En published: remover de tabla
+          setCandidatesList(prev => prev.filter(c => c.id !== newId));
+        }
         toast.error(`Error de sistema al importar ${candidate.name}. Por favor, intenta de nuevo.`);
       } else if (newCount === 3) {
         // Tercera importación: Error de duplicado en la vacante
-        setCandidatesList(prev => prev.filter(c => c.id !== newId));
+        if (isDraft) {
+          setCandidatesList(prev =>
+            prev.map(c => c.id === newId ? {
+              ...c,
+              importStatus: 'Error',
+              importId: importId
+            } : c)
+          );
+        } else {
+          setCandidatesList(prev => prev.filter(c => c.id !== newId));
+        }
         toast.error(`Este candidato ya existe en la vacante. Por favor, intenta con otro CV.`);
       } else if (newCount === 4) {
         // Cuarta importación: Error - ya existe en la empresa
-        setCandidatesList(prev => prev.filter(c => c.id !== newId));
+        if (isDraft) {
+          setCandidatesList(prev =>
+            prev.map(c => c.id === newId ? {
+              ...c,
+              importStatus: 'Error',
+              importId: importId
+            } : c)
+          );
+        } else {
+          setCandidatesList(prev => prev.filter(c => c.id !== newId));
+        }
         toast.error(`Este candidato ya existe en la empresa. Solo puedes agregarlo o invitarlo a esta vacante.`);
       } else if (newCount >= 5) {
         // Quinta importación en adelante: Error de extracción de datos
-        setCandidatesList(prev => prev.filter(c => c.id !== newId));
+        if (isDraft) {
+          setCandidatesList(prev =>
+            prev.map(c => c.id === newId ? {
+              ...c,
+              importStatus: 'Error',
+              importId: importId
+            } : c)
+          );
+        } else {
+          setCandidatesList(prev => prev.filter(c => c.id !== newId));
+        }
         toast.error(`No pudimos extraer datos del candidato. Asegurate de que lo que estás subiendo es un PDF de un CV.`);
       }
     }, 3000);
