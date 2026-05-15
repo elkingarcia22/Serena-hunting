@@ -29,7 +29,8 @@ import {
   Phone,
   FileText,
   Printer,
-  Check
+  Check,
+  Loader2
 } from 'lucide-react';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
@@ -83,36 +84,34 @@ export function JobView({ onCandidateClick }: { onCandidateClick: (id: string) =
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
   const [filterOrigin, setFilterOrigin] = useState('all');
   const [filterStage, setFilterStage] = useState('all');
-  const [filterStatus, setFilterStatus] = useState('active');
+  const [filterStatus, setFilterStatus] = useState('all');
   const [serenaMode, setSerenaMode] = useState<'global' | 'search'>('global');
+  const [isUploading, setIsUploading] = useState(false);
+
+  const [candidatesList, setCandidatesList] = useState<any[]>(
+    candidatesData.map((c, idx) => {
+      let status: 'active' | 'hired' | 'rejected' | 'action_required' = 'active';
+      if (idx % 5 === 0) status = 'hired';
+      else if (idx % 5 === 1) status = 'rejected';
+      else if (idx % 5 === 2) status = 'action_required';
+      else status = 'active';
+      
+      return {
+        ...c,
+        origin: idx % 3 === 0 ? 'Importado por CV' : (idx % 3 === 1 ? 'Serena IA' : 'Vacante'),
+        stage: stages.find(s => s.id === (c.applications?.[0]?.currentStage || 'sourcing'))?.name || 'Sourcing',
+        status: status,
+        identification: `1.0${idx}4.56${idx}.789`,
+        phone: `+57 31${idx} 456 7890`
+      };
+    })
+  );
 
   // Debug Refs
   const rootRef = React.useRef<HTMLDivElement>(null);
   const headerRef = React.useRef<HTMLDivElement>(null);
   const contentRef = React.useRef<HTMLDivElement>(null);
 
-  React.useEffect(() => {
-    console.log('[JobView] Component Mounted');
-    console.log('[JobView] Active Tab:', activeTab);
-    console.log('[JobView] Candidates Data Length:', candidatesData.length);
-    
-    const checkLayout = () => {
-      if (rootRef.current) {
-        const rect = rootRef.current.getBoundingClientRect();
-        console.log('[JobView] Root Dimensions:', { width: rect.width, height: rect.height });
-      }
-      if (headerRef.current) {
-        console.log('[JobView] Header Height:', headerRef.current.offsetHeight);
-      }
-      if (contentRef.current) {
-        console.log('[JobView] Content Height:', contentRef.current.offsetHeight);
-      }
-    };
-
-    checkLayout();
-    window.addEventListener('resize', checkLayout);
-    return () => window.removeEventListener('resize', checkLayout);
-  }, []);
 
   React.useEffect(() => {
     console.log('[JobView] State Update - Tab:', activeTab, 'Serena:', isSerenaOpen);
@@ -121,24 +120,51 @@ export function JobView({ onCandidateClick }: { onCandidateClick: (id: string) =
   const activeFiltersCount = [
     filterOrigin !== 'all',
     filterStage !== 'all',
-    filterStatus !== 'active'
+    filterStatus !== 'all'
   ].filter(Boolean).length;
 
-  const [candidatesList, setCandidatesList] = useState<any[]>(
-    candidatesData.map((c, idx) => {
-      let status = c.applications?.[0]?.status || 'active';
-      if (idx % 4 === 0) status = 'action_required';
+
+  React.useEffect(() => {
+    const checkLayout = () => {
+      if (rootRef.current) {
+        const rect = rootRef.current.getBoundingClientRect();
+        console.log('[LayoutDebug] Root:', { width: rect.width, height: rect.height });
+      }
       
-      return {
-        ...c,
-        origin: idx % 3 === 0 ? 'Importado por CV' : (idx % 3 === 1 ? 'Serena IA' : 'Vacante'),
-        stage: stages.find(s => s.id === c.applications?.[0]?.currentStage)?.name || 'Sourcing',
-        status: status,
-        identification: `1.0${idx}4.56${idx}.789`,
-        phone: `+57 31${idx} 456 7890`
-      };
-    })
-  );
+      const tableContainer = document.querySelector('.overflow-x-auto');
+      if (tableContainer) {
+        const { scrollWidth, clientWidth, scrollHeight, clientHeight } = tableContainer;
+        console.log('[LayoutDebug] Table Container:', { 
+          hasHorizontalScroll: scrollWidth > clientWidth,
+          hasVerticalScroll: scrollHeight > clientHeight,
+          scrollWidth, clientWidth,
+          scrollHeight, clientHeight
+        });
+        
+        const style = window.getComputedStyle(tableContainer);
+        console.log('[LayoutDebug] Table Container Styles:', {
+          border: style.border,
+          borderRight: style.borderRight,
+          overflowX: style.overflowX,
+          overflowY: style.overflowY
+        });
+      }
+
+      const mainContent = contentRef.current;
+      if (mainContent) {
+        console.log('[LayoutDebug] Parent Content Width:', mainContent.offsetWidth);
+        const innerContent = mainContent.firstElementChild as HTMLElement;
+        if (innerContent) {
+          console.log('[LayoutDebug] Inner Content (1600px) Width:', innerContent.offsetWidth);
+          console.log('[LayoutDebug] Inner Content MaxWidth:', window.getComputedStyle(innerContent).maxWidth);
+        }
+      }
+    };
+
+    checkLayout();
+    window.addEventListener('resize', checkLayout);
+    return () => window.removeEventListener('resize', checkLayout);
+  }, [activeTab, isSerenaOpen, candidatesList]);
 
   const filteredCandidates = candidatesList.filter(candidate => {
     // Search query filter
@@ -174,16 +200,100 @@ export function JobView({ onCandidateClick }: { onCandidateClick: (id: string) =
 
   const handleImportCandidate = (candidate: any) => {
     console.log("Importando candidato:", candidate);
-    setCandidatesList(prev => {
-      if (prev.some(c => c.name === candidate.name)) return prev;
-      return [...prev, { 
-        ...candidate, 
-        id: (prev.length + 1).toString(),
-        origin: 'Serena IA',
-        stage: 'Sourcing',
-        status: 'active'
-      }];
-    });
+    const newId = `cand-sim-001`;
+    const newCandidate = { 
+      ...candidate, 
+      id: newId,
+      email: 'alejandro.martinez@email.com',
+      phone: '+57 315 987 6543',
+      age: 32,
+      location: 'Medellín, Colombia',
+      yearsExperience: 7,
+      origin: 'Importado por CV',
+      stage: 'Sourcing',
+      status: 'processing' as const,
+      avatar: candidate.avatar || candidate.name.charAt(0),
+      identification: `1.084.567.890`,
+      description: 'Senior Software Engineer con amplia experiencia en arquitecturas de microservicios y lenguajes de alto rendimiento como Golang y Rust. Apasionado por la optimización de procesos y la escalabilidad.',
+      applications: [
+        {
+          id: `app-sim-001`,
+          jobTitle: 'Desarrollador Golang',
+          jobLocation: 'Remoto',
+          currentStage: 'sourcing',
+          status: 'active',
+          appliedDate: new Date().toISOString().split('T')[0],
+          matchScore: 88,
+          confidence: 'high',
+          scores: {
+            cvScore: 88,
+            serenaScore: 85
+          },
+          cvEvaluation: {
+            summary: 'Perfil técnico muy sólido con experiencia directa en el stack solicitado. Se destaca su trayectoria en empresas de alto tráfico y su capacidad de resolución de problemas complejos.',
+            score: 88,
+            criteria: [
+              { label: 'Años de Experiencia', score: 90, status: 'pass' },
+              { label: 'Stack Tecnológico', score: 95, status: 'pass' },
+              { label: 'Educación', score: 80, status: 'pass' }
+            ],
+            evaluations: [
+              { category: 'Experiencia', description: 'Más de 7 años en desarrollo backend, con los últimos 4 enfocados exclusivamente en Golang.' },
+              { category: 'Ajuste Cultural', description: 'Demuestra proactividad y enfoque en resultados.' }
+            ]
+          },
+          serenaInterview: {
+            transcript: [
+              { role: 'serena', text: 'Hola Alejandro, cuéntanos sobre tu experiencia con concurrencia en Go.', timestamp: '11:00' },
+              { role: 'candidate', text: 'He trabajado extensamente con goroutines y channels para procesar miles de mensajes por segundo en sistemas de mensajería.', timestamp: '11:02' }
+            ],
+            questionScores: [
+              { objective: 'Conocimiento Técnico', question: 'Manejo de concurrencia', score: 92, analysis: 'Excelente dominio de las primitivas de Go.' }
+            ],
+            overallFeedback: {
+              summary: 'Candidato con gran potencial técnico y buena capacidad de comunicación.',
+              strengths: ['Dominio técnico', 'Experiencia en sistemas distribuidos'],
+              improvements: ['Podría profundizar en liderazgo de equipos']
+            }
+          }
+        }
+      ],
+      experience: [
+        {
+          company: 'TechFlow Solutions',
+          position: 'Senior Backend Developer',
+          duration: '2021 - Presente',
+          description: 'Liderazgo técnico en la migración de monolito a microservicios en Go.',
+          location: 'Medellín',
+          startDate: '2021',
+          endDate: null,
+          current: true,
+          achievements: ['Reducción de latencia en un 30%', 'Implementación de CI/CD con GitHub Actions']
+        }
+      ],
+      skills: {
+        technical: ['Golang', 'Docker', 'Kubernetes', 'gRPC', 'PostgreSQL', 'Redis'],
+        soft: ['Liderazgo Técnico', 'Resolución de Problemas', 'Mentoria']
+      },
+      education: [
+        {
+          institution: 'Universidad Nacional de Colombia',
+          degree: 'Ingeniería de Sistemas',
+          year: '2016'
+        }
+      ],
+      notes: ['Candidato referido por el equipo interno.', 'Muy buen dominio técnico detectado en la evaluación inicial de CV.']
+    };
+
+    setCandidatesList(prev => [newCandidate, ...prev]);
+
+    // Simular procesamiento
+    setTimeout(() => {
+      setCandidatesList(prev => 
+        prev.map(c => c.id === newId ? { ...c, status: 'active' } : c)
+      );
+      toast.success(`${candidate.name} procesado correctamente`);
+    }, 3000);
   };
   const [expandedSections, setExpandedSections] = useState<Record<string, { active: boolean; discarded: boolean }>>({
     'screening-talent': { active: true, discarded: false },
@@ -197,20 +307,18 @@ export function JobView({ onCandidateClick }: { onCandidateClick: (id: string) =
     'seleccionado': { active: true, discarded: false }
   });
 
-  // Agrupar candidatos por etapa usando sus aplicaciones
+  // Agrupar candidatos por etapa usando la lista filtrada
   const candidatesByStage = stages.map(stage => {
-    const stageCandidates = candidatesData.map(c => {
-      const appInStage = c.applications?.find(app => app.currentStage === stage.id);
-      if (appInStage) {
-        return { ...c, _activeApp: appInStage };
-      }
-      return null;
-    }).filter(Boolean) as (any)[];
-
-    const active = stageCandidates.filter(c => c._activeApp.status === 'active' || c._activeApp.status === 'hired');
-    const discarded = stageCandidates.filter(c => c._activeApp.status === 'rejected');
+    const stageCandidates = filteredCandidates.filter(c => c.stage === stage.name);
+    const active = stageCandidates.filter(c => c.status !== 'rejected');
+    const discarded = stageCandidates.filter(c => c.status === 'rejected');
     
-    return { ...stage, active, discarded, total: stageCandidates.length };
+    return {
+      ...stage,
+      active,
+      discarded,
+      total: stageCandidates.length
+    };
   });
     
   const renderCandidateCard = (candidate: any, isTourTarget?: boolean) => {
@@ -270,22 +378,22 @@ export function JobView({ onCandidateClick }: { onCandidateClick: (id: string) =
 
           {/* Layer 2: Main Title & Hero Actions */}
           <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-6">
-              <Button variant="outline" size="icon" className="h-11 w-11 border-gray-200 text-gray-600 hover:bg-gray-50 bg-transparent transition-all rounded-xl">
+            <div className="flex items-center gap-6 min-w-0">
+              <Button variant="outline" size="icon" className="h-11 w-11 border-gray-200 text-gray-600 hover:bg-gray-50 bg-transparent transition-all rounded-xl flex-shrink-0">
                 <ArrowLeft className="w-5 h-5" />
               </Button>
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-4">
-                  <h1 className="text-3xl font-semibold text-gray-900 tracking-tight">
-                    Desarrollador Golang
-                  </h1>
-                  <div className="flex items-center gap-2">
-                    <Badge className="bg-emerald-50 text-emerald-600 border-none text-[10px] px-3 py-1 rounded-full font-semibold flex items-center gap-1.5">
-                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                      Publicada
-                    </Badge>
-                  </div>
-                </div>
+              <div className="flex items-center gap-4 min-w-0">
+                <h1 className="text-3xl font-semibold text-gray-900 tracking-tight truncate">
+                  Desarrollador Golang
+                </h1>
+                <Badge className="bg-emerald-50 text-emerald-600 border-none text-[10px] px-3 py-1 rounded-full font-semibold flex items-center gap-1.5 flex-shrink-0">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  Publicada
+                </Badge>
+                <Badge className="bg-gray-100 text-gray-600 border-none text-[10px] px-3 py-1 rounded-full font-semibold flex items-center gap-1.5 flex-shrink-0">
+                  <Eye className="w-3.5 h-3.5" />
+                  Pública
+                </Badge>
               </div>
             </div>
 
@@ -295,24 +403,19 @@ export function JobView({ onCandidateClick }: { onCandidateClick: (id: string) =
                     setSerenaMode('global');
                     setIsSerenaOpen(!isSerenaOpen);
                   }}
-                  className={cn(
-                    "h-11 px-6 rounded-full font-semibold text-xs transition-all flex items-center gap-2 shadow-lg",
-                    isSerenaOpen 
-                      ? "bg-gray-100 text-gray-600 hover:bg-gray-200" 
-                      : "bg-gradient-to-r from-blue-600 via-indigo-600 to-fuchsia-600 text-white hover:scale-105 shadow-indigo-100"
-                  )}
+                  className="h-11 px-6 rounded-full font-semibold text-xs transition-all flex items-center gap-2 shadow-lg bg-gradient-to-r from-blue-600 via-indigo-600 to-fuchsia-600 text-white hover:scale-105 shadow-indigo-100"
                 >
                   <Sparkles className={cn("w-4 h-4", !isSerenaOpen && "animate-pulse")} />
-                  {isSerenaOpen ? 'Cerrar' : 'Serena IA'}
+                  Serena IA
                 </Button>
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <div className="p-[2px] bg-gradient-to-r from-blue-600 via-indigo-600 to-fuchsia-600 rounded-full group transition-all hover:shadow-lg hover:shadow-indigo-100">
-                    <Button variant="ghost" className="bg-white hover:bg-gray-50/50 text-gray-600 font-semibold text-[11px] h-[40px] px-6 transition-all rounded-full flex items-center gap-2 relative overflow-hidden w-full">
-                      <Sparkles className="w-4 h-4 text-blue-500" />
-                      <span>Importar candidatos</span>
-                      <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
+                    <Button variant="ghost" className="bg-white hover:bg-transparent text-gray-600 font-semibold text-[11px] h-[40px] px-6 transition-all rounded-full flex items-center gap-2 relative overflow-hidden w-full">
+                      <Sparkles className="w-4 h-4 text-blue-500 group-hover:text-white transition-colors" />
+                      <span className="group-hover:text-white transition-colors">Importar candidatos</span>
+                      <ChevronDown className="w-3.5 h-3.5 text-gray-400 group-hover:text-white transition-colors" />
                     </Button>
                   </div>
                 </DropdownMenuTrigger>
@@ -441,12 +544,13 @@ export function JobView({ onCandidateClick }: { onCandidateClick: (id: string) =
         </div>
       </div>
 
-      <div ref={contentRef} className="flex-1 flex flex-row overflow-hidden">
+      <div ref={contentRef} className="flex-1 flex flex-row overflow-hidden justify-center bg-gray-50">
+        <div className="w-full max-w-[1600px] flex flex-row overflow-hidden">
         {activeTab === 'cvs' && (
-          <div className="flex-1 flex flex-col overflow-hidden bg-gray-50 items-center">
+          <div className="flex-1 flex flex-col overflow-hidden">
             {/* Table View - Hidden if no candidates */}
             <div className={cn(
-              "flex-1 w-full max-w-[1600px] flex flex-col overflow-hidden px-8 py-6 gap-6",
+              "flex-1 w-full flex flex-col overflow-hidden px-8 py-6 gap-6",
               candidatesList.length === 0 && "hidden"
             )}>
               {/* Table Header / Filters */}
@@ -469,7 +573,7 @@ export function JobView({ onCandidateClick }: { onCandidateClick: (id: string) =
                       className={cn(
                         "rounded-xl border-gray-200 text-gray-600 gap-2 h-10 transition-all",
                         isFilterDrawerOpen && "bg-gray-100 border-gray-300",
-                        (filterOrigin !== 'all' || filterStage !== 'all' || filterStatus !== 'active') && "border-blue-500 text-blue-600 bg-blue-50"
+                        (filterOrigin !== 'all' || filterStage !== 'all' || filterStatus !== 'all') && "border-blue-500 text-blue-600 bg-blue-50"
                       )}
                     >
                       <Filter className="w-4 h-4" /> Filtros
@@ -487,8 +591,8 @@ export function JobView({ onCandidateClick }: { onCandidateClick: (id: string) =
               </div>
 
               {/* Table Container */}
-              <div className="flex-1 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
-                <div className="overflow-x-auto">
+              <div className="flex-1 bg-white rounded-2xl shadow-sm overflow-hidden flex flex-col">
+                <div className="overflow-x-auto scrollbar-hide">
                   <table className="w-full text-left border-collapse">
                     <thead className="sticky top-0 z-10 bg-gray-50 border-b border-gray-100">
                       <tr>
@@ -501,12 +605,39 @@ export function JobView({ onCandidateClick }: { onCandidateClick: (id: string) =
                       </tr>
                     </thead>
                       <tbody className="divide-y divide-gray-50">
-                        {filteredCandidates.map((candidate) => (
-                          <tr 
-                            key={candidate.id} 
-                            onClick={() => onCandidateClick(candidate.id)}
-                            className="hover:bg-gray-50 transition-colors group cursor-pointer"
-                          >
+                        {filteredCandidates.length === 0 ? (
+                          <tr>
+                            <td colSpan={6} className="py-24">
+                              <div className="flex flex-col items-center justify-center text-center">
+                                <div className="w-16 h-16 bg-blue-50 rounded-[24px] flex items-center justify-center mb-4 border border-blue-100">
+                                  <Search className="w-8 h-8 text-blue-400" />
+                                </div>
+                                <h3 className="text-sm font-bold text-gray-900 mb-1">No se encontraron candidatos</h3>
+                                <p className="text-xs text-gray-500 max-w-[280px] leading-relaxed">
+                                  No hay resultados para tu búsqueda o filtros actuales. Intenta ajustar los criterios para encontrar lo que necesitas.
+                                </p>
+                                <Button 
+                                  variant="ghost" 
+                                  onClick={() => {
+                                    setSearchQuery('');
+                                    setFilterOrigin('all');
+                                    setFilterStage('all');
+                                    setFilterStatus('all');
+                                  }}
+                                  className="mt-6 text-blue-600 hover:text-blue-700 font-bold text-xs bg-blue-50/50 px-6 rounded-xl"
+                                >
+                                  Limpiar todos los filtros
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        ) : (
+                          filteredCandidates.map((candidate) => (
+                            <tr 
+                              key={candidate.id} 
+                              onClick={() => onCandidateClick(candidate.id)}
+                              className="hover:bg-gray-50 transition-colors group cursor-pointer"
+                            >
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-3">
                               <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold text-xs">
@@ -540,27 +671,24 @@ export function JobView({ onCandidateClick }: { onCandidateClick: (id: string) =
                             </Badge>
                           </td>
                           <td className="px-6 py-4">
-                            <div className="flex items-center gap-2">
-                              <div className={cn(
-                                "w-1.5 h-1.5 rounded-full animate-pulse",
-                                candidate.status === 'active' ? "bg-emerald-500" :
-                                candidate.status === 'hired' ? "bg-blue-500" :
-                                candidate.status === 'action_required' ? "bg-amber-500" :
-                                "bg-rose-500"
-                              )} />
-                              <span className={cn(
-                                "text-[10px] font-semibold",
-                                candidate.status === 'active' ? "text-emerald-600" :
-                                candidate.status === 'hired' ? "text-blue-600" :
-                                candidate.status === 'action_required' ? "text-amber-600" :
-                                "text-rose-600"
-                              )}>
-                                {candidate.status === 'active' ? 'Activo' : 
-                                 candidate.status === 'hired' ? 'Contratado' : 
-                                 candidate.status === 'action_required' ? 'Acción Requerida' : 
-                                 'Descartado'}
-                              </span>
-                            </div>
+                            <Badge variant="outline" className={cn(
+                              "text-[10px] px-2 py-0.5 border-none font-semibold rounded-lg transition-all duration-300",
+                              candidate.status === 'processing' ? "bg-blue-50 text-blue-600 animate-pulse" :
+                              candidate.status === 'active' ? "bg-emerald-50 text-emerald-600" :
+                              candidate.status === 'hired' ? "bg-blue-50 text-blue-600" :
+                              candidate.status === 'action_required' ? "bg-amber-50 text-amber-600" :
+                              "bg-rose-50 text-rose-600"
+                            )}>
+                              {candidate.status === 'processing' ? (
+                                <span className="flex items-center gap-1.5">
+                                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                  En progreso
+                                </span>
+                              ) : candidate.status === 'active' ? 'Activo' : 
+                               candidate.status === 'hired' ? 'Contratado' : 
+                               candidate.status === 'action_required' ? 'Acción Requerida' : 
+                               'Descartado'}
+                            </Badge>
                           </td>
                           <td className="px-6 py-4 text-right">
                             <div onClick={(e) => e.stopPropagation()}>
@@ -700,7 +828,7 @@ export function JobView({ onCandidateClick }: { onCandidateClick: (id: string) =
                             </div>
                           </td>
                         </tr>
-                      ))}
+                      )))}
                     </tbody>
                   </table>
                 </div>
@@ -769,23 +897,46 @@ export function JobView({ onCandidateClick }: { onCandidateClick: (id: string) =
             </div>
 
             {/* Kanban Board */}
-            <div className="flex-1 flex flex-col overflow-hidden items-center">
-              <div className="flex-1 w-full max-w-[1600px] overflow-x-auto bg-gray-50/30 px-8 py-4 scrollbar-hide">
+            <div className="flex-1 flex flex-col overflow-hidden">
+              <div className="flex-1 w-full overflow-x-auto bg-gray-50/30 px-8 py-4 scrollbar-hide">
                 <div className="flex gap-4 h-full min-w-max">
-                  {candidatesByStage.map(stage => (
-                    <div key={stage.id} className="w-72 flex flex-col">
-                      <div className="bg-white border border-gray-200 p-3 rounded-t-lg shadow-sm">
-                        <h3 className="text-xs font-semibold text-gray-900">{stage.order}. {stage.name}</h3>
-                        <div className="flex gap-2 text-[9px] text-gray-400 mt-1 font-semibold">
-                          <span className="text-green-600">{stage.active.length} activos</span>
-                          <span>{stage.total} total</span>
+                  {filteredCandidates.length === 0 ? (
+                    <div className="flex-1 flex flex-col items-center justify-center text-center min-w-full py-20">
+                      <div className="w-20 h-20 bg-white rounded-[32px] shadow-xl shadow-gray-100 flex items-center justify-center mb-6 border border-gray-100">
+                        <Users className="w-10 h-10 text-gray-300" />
+                      </div>
+                      <h3 className="text-lg font-bold text-gray-900 mb-2">Tablero vacío</h3>
+                      <p className="text-sm text-gray-500 max-w-[320px] leading-relaxed">
+                        No hay candidatos que coincidan con tus filtros en ninguna etapa del proceso.
+                      </p>
+                      <Button 
+                        onClick={() => {
+                          setSearchQuery('');
+                          setFilterOrigin('all');
+                          setFilterStage('all');
+                          setFilterStatus('all');
+                        }}
+                        className="mt-8 bg-gray-900 text-white px-8 h-12 rounded-2xl font-bold text-xs hover:bg-gray-800 transition-all shadow-lg shadow-gray-200"
+                      >
+                        Restablecer búsqueda
+                      </Button>
+                    </div>
+                  ) : (
+                    candidatesByStage.map(stage => (
+                      <div key={stage.id} className="w-72 flex flex-col">
+                        <div className="bg-white border border-gray-200 p-3 rounded-t-lg shadow-sm">
+                          <h3 className="text-xs font-semibold text-gray-900">{stage.order}. {stage.name}</h3>
+                          <div className="flex gap-2 text-[9px] text-gray-400 mt-1 font-semibold">
+                            <span className="text-green-600">{stage.active.length} activos</span>
+                            <span>{stage.total} total</span>
+                          </div>
+                        </div>
+                        <div className="flex-1 bg-gray-100/20 border-x border-b border-gray-200 rounded-b-lg p-2 overflow-y-auto space-y-2">
+                          {stage.active.map((c, idx) => renderCandidateCard(c, stage.order === 1 && idx === 0))}
                         </div>
                       </div>
-                      <div className="flex-1 bg-gray-100/20 border-x border-b border-gray-200 rounded-b-lg p-2 overflow-y-auto space-y-2">
-                        {stage.active.map((c, idx) => renderCandidateCard(c, stage.order === 1 && idx === 0))}
-                      </div>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </div>
               </div>
             </div>
@@ -793,8 +944,8 @@ export function JobView({ onCandidateClick }: { onCandidateClick: (id: string) =
         )}
 
         <div className={cn(
-          "transition-all duration-300 ease-in-out h-full py-6 pr-8",
-          isSerenaOpen ? "w-[452px]" : "w-0 overflow-hidden"
+          "transition-all duration-300 ease-in-out h-full",
+          isSerenaOpen ? "w-[452px] py-6 pr-8 opacity-100" : "w-0 overflow-hidden opacity-0"
         )}>
           <div className="h-full bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
             <SerenaIAPanel 
@@ -808,17 +959,12 @@ export function JobView({ onCandidateClick }: { onCandidateClick: (id: string) =
           </div>
         </div>
       </div>
+    </div>
 
       {/* Modals & Overlays */}
       <Dialog open={isImportModalOpen} onOpenChange={setIsImportModalOpen}>
         <DialogContent className="max-w-2xl p-0 overflow-hidden rounded-[32px] border-none shadow-[0_32px_64px_-12px_rgba(0,0,0,0.14)] bg-white">
           <div className="relative p-12 bg-gradient-to-b from-blue-50/50 to-white">
-            <button 
-              onClick={() => setIsImportModalOpen(false)}
-              className="absolute right-8 top-8 p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-400 hover:text-gray-600"
-            >
-              <X className="w-5 h-5" />
-            </button>
             
             <div className="text-center mb-10">
               <div className="w-20 h-20 bg-blue-600 text-white rounded-[24px] flex items-center justify-center mx-auto mb-6 shadow-xl shadow-blue-100 group">
@@ -833,14 +979,22 @@ export function JobView({ onCandidateClick }: { onCandidateClick: (id: string) =
             <div 
               className="relative group cursor-pointer"
               onDragOver={(e) => e.preventDefault()}
-              onDrop={(e) => {
-                e.preventDefault();
+              onClick={() => {
                 setIsUploading(true);
+                handleImportCandidate({ name: 'Alejandro Martínez', avatar: 'AM' });
                 setTimeout(() => {
                   setIsUploading(false);
                   setIsImportModalOpen(false);
-                  toast.success('Candidatos importados correctamente');
-                }, 3000);
+                }, 100);
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                setIsUploading(true);
+                handleImportCandidate({ name: 'Alejandro Martínez', avatar: 'AM' });
+                setTimeout(() => {
+                  setIsUploading(false);
+                  setIsImportModalOpen(false);
+                }, 100);
               }}
             >
               <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-[32px] blur-md opacity-10 group-hover:opacity-20 transition duration-500"></div>
@@ -855,45 +1009,35 @@ export function JobView({ onCandidateClick }: { onCandidateClick: (id: string) =
               </div>
             </div>
 
-            <div className="mt-12 flex items-center justify-between">
-              <div className="flex items-center gap-6">
-                <div className="flex -space-x-3">
-                  {[1,2,3].map(i => (
-                    <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center overflow-hidden">
-                      <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 animate-pulse" />
-                    </div>
-                  ))}
-                </div>
-                <div className="text-left">
-                  <p className="text-xs font-bold text-gray-400 mb-1">Tecnología Serena IA</p>
-                  <p className="text-sm text-gray-600 font-medium">+2,450 CVs analizados hoy</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-4">
-                <label className="flex items-center gap-3 cursor-pointer group">
-                  <div className="relative flex items-center">
-                    <input 
-                      type="checkbox" 
-                      className="sr-only peer"
-                      checked={hasAcceptedTerms}
-                      onChange={(e) => setHasAcceptedTerms(e.target.checked)}
-                    />
-                    <div className="w-5 h-5 rounded-md border-2 border-gray-200 peer-checked:border-blue-600 peer-checked:bg-blue-600 transition-all flex items-center justify-center">
-                      {hasAcceptedTerms && <Check className="w-3.5 h-3.5 text-white" strokeWidth={4} />}
-                    </div>
+            <div className="mt-8">
+              <div className="flex items-start gap-4 p-6 bg-gray-50 rounded-[24px] border border-gray-100 text-left w-full transition-all hover:shadow-sm">
+                <div className="relative flex items-center mt-1">
+                  <input 
+                    type="checkbox" 
+                    id="terms"
+                    className="sr-only peer"
+                    checked={hasAcceptedTerms}
+                    onChange={(e) => setHasAcceptedTerms(e.target.checked)}
+                  />
+                  <div className="w-5 h-5 rounded-md border-2 border-gray-200 peer-checked:border-blue-600 peer-checked:bg-blue-600 transition-all flex items-center justify-center">
+                    {hasAcceptedTerms && <Check className="w-3.5 h-3.5 text-white" strokeWidth={4} />}
                   </div>
-                  <span className="text-sm text-gray-600 font-medium group-hover:text-gray-900 transition-colors">Acepto los términos de uso</span>
-                </label>
+                </div>
+                <div className="flex-1">
+                  <label htmlFor="terms" className="text-[11px] text-gray-500 leading-relaxed font-medium cursor-pointer block">
+                    “Al cargar información en el módulo de reclutamiento, el Cliente declara contar con las autorizaciones necesarias para el tratamiento de los datos suministrados, actuando como Responsable del tratamiento. UBITS actúa como Encargado, tratando dicha información conforme a las instrucciones del Cliente 
+                    <span className="text-blue-600 font-bold ml-1 hover:underline underline-offset-2">Política de Tratamiento de Datos y los Términos y Condiciones de UBITS.</span>”
+                  </label>
+                </div>
               </div>
             </div>
           </div>
 
-          <DialogFooter className="p-8 bg-gray-50/50 border-t border-gray-100 flex items-center justify-between sm:justify-between">
+          <DialogFooter className="px-12 py-8 bg-gray-50/50 border-t border-gray-100 flex items-center justify-between sm:justify-between">
             <Button 
-              variant="ghost" 
+              variant="outline" 
               onClick={() => setIsImportModalOpen(false)}
-              className="text-gray-500 hover:text-gray-700 font-semibold"
+              className="h-[52px] px-10 rounded-2xl border-gray-200 text-gray-500 font-bold hover:bg-white hover:text-gray-700 hover:border-gray-300 transition-all bg-transparent"
             >
               Cancelar
             </Button>
@@ -901,11 +1045,11 @@ export function JobView({ onCandidateClick }: { onCandidateClick: (id: string) =
               disabled={!hasAcceptedTerms}
               onClick={() => {
                 setIsUploading(true);
+                handleImportCandidate({ name: 'Alejandro Martínez', avatar: 'AM' });
                 setTimeout(() => {
                   setIsUploading(false);
                   setIsImportModalOpen(false);
-                  toast.success('Candidatos importados correctamente');
-                }, 3000);
+                }, 100);
               }}
               className={cn(
                 "px-14 h-[52px] rounded-2xl font-bold transition-all text-sm shadow-xl",
@@ -999,10 +1143,10 @@ export function JobView({ onCandidateClick }: { onCandidateClick: (id: string) =
                   </SelectTrigger>
                   <SelectContent className="rounded-xl border-gray-100 shadow-xl p-2">
                     <SelectItem value="all" className="rounded-lg font-semibold text-gray-600">Todos los estados</SelectItem>
-                    <SelectItem value="active" className="rounded-lg font-semibold text-gray-600">Candidatos Activos</SelectItem>
-                    <SelectItem value="action_required" className="rounded-lg font-semibold text-emerald-600">Acción Requerida</SelectItem>
-                    <SelectItem value="on_hold" className="rounded-lg font-semibold text-gray-600">En espera</SelectItem>
-                    <SelectItem value="rejected" className="rounded-lg font-semibold text-rose-600">Descartados</SelectItem>
+                    <SelectItem value="active" className="rounded-lg font-semibold text-gray-600">Activo</SelectItem>
+                    <SelectItem value="hired" className="rounded-lg font-semibold text-gray-600">Contratado</SelectItem>
+                    <SelectItem value="action_required" className="rounded-lg font-semibold text-gray-600">Acción Requerida</SelectItem>
+                    <SelectItem value="rejected" className="rounded-lg font-semibold text-gray-600">Descartado</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -1015,7 +1159,7 @@ export function JobView({ onCandidateClick }: { onCandidateClick: (id: string) =
                 onClick={() => {
                   setFilterOrigin('all');
                   setFilterStage('all');
-                  setFilterStatus('active');
+                  setFilterStatus('all');
                 }}
               >
                 Limpiar

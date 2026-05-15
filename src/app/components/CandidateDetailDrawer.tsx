@@ -42,6 +42,7 @@ interface CandidateDetailDrawerProps {
   onClose?: () => void;
   totalCandidates?: number;
   currentIndex?: number;
+  customCandidates?: any[];
 }
 
 export function CandidateDetailDrawer({ 
@@ -50,7 +51,8 @@ export function CandidateDetailDrawer({
   onNext,
   onClose,
   totalCandidates = 0,
-  currentIndex = 1
+  currentIndex = 1,
+  customCandidates
 }: CandidateDetailDrawerProps) {
   const { 
     openFeedback, 
@@ -187,14 +189,98 @@ export function CandidateDetailDrawer({
     toast.info('Edición cancelada');
   };
 
-  const mockCandidate = candidatesData.find(candidate => candidate.id === candidateId) || candidatesData.find(candidate => {
+  const listToSearch = customCandidates || candidatesData;
+
+  const mockCandidate = candidatesData.find(candidate => candidate.id === candidateId) || (candidateId === 'cand-sim-001' ? {
+    id: 'cand-sim-001',
+    name: 'Alejandro Martínez',
+    email: 'alejandro.martinez@email.com',
+    phone: '+57 315 987 6543',
+    age: 32,
+    location: 'Medellín, Colombia',
+    yearsExperience: 7,
+    origin: 'Importado por CV',
+    stage: 'Sourcing',
+    status: 'active',
+    avatar: 'AM',
+    identification: `1.084.567.890`,
+    description: 'Senior Software Engineer con amplia experiencia en arquitecturas de microservicios y lenguajes de alto rendimiento como Golang y Rust. Apasionado por la optimización de procesos y la escalabilidad.',
+    applications: [
+      {
+        id: `app-sim-001`,
+        jobTitle: 'Desarrollador Golang',
+        jobLocation: 'Remoto',
+        currentStage: 'sourcing',
+        status: 'active',
+        appliedDate: new Date().toISOString().split('T')[0],
+        matchScore: 88,
+        confidence: 'high',
+        scores: {
+          cvScore: 88,
+          serenaScore: 85
+        },
+        cvEvaluation: {
+          summary: 'Perfil técnico muy sólido con experiencia directa en el stack solicitado. Se destaca su trayectoria en empresas de alto tráfico y su capacidad de resolución de problemas complejos.',
+          score: 88,
+          criteria: [
+            { label: 'Años de Experiencia', score: 90, status: 'pass' },
+            { label: 'Stack Tecnológico', score: 95, status: 'pass' },
+            { label: 'Educación', score: 80, status: 'pass' }
+          ],
+          evaluations: [
+            { category: 'Experiencia', description: 'Más de 7 años en desarrollo backend, con los últimos 4 enfocados exclusivamente en Golang.' },
+            { category: 'Ajuste Cultural', description: 'Demuestra proactividad y enfoque en resultados.' }
+          ]
+        },
+        serenaInterview: {
+          transcript: [
+            { role: 'serena', text: 'Hola Alejandro, cuéntanos sobre tu experiencia con concurrencia en Go.', timestamp: '11:00' },
+            { role: 'candidate', text: 'He trabajado extensamente con goroutines y channels para procesar miles de mensajes por segundo en sistemas de mensajería.', timestamp: '11:02' }
+          ],
+          questionScores: [
+            { objective: 'Conocimiento Técnico', question: 'Manejo de concurrencia', score: 92, analysis: 'Excelente dominio de las primitivas de Go.' }
+          ],
+          overallFeedback: {
+            summary: 'Candidato con gran potencial técnico y buena capacidad de comunicación.',
+            strengths: ['Dominio técnico', 'Experiencia en sistemas distribuidos'],
+            improvements: ['Podría profundizar en liderazgo de equipos']
+          }
+        }
+      }
+    ],
+    experience: [
+      {
+        company: 'TechFlow Solutions',
+        position: 'Senior Backend Developer',
+        duration: '2021 - Presente',
+        description: 'Liderazgo técnico en la migración de monolito a microservicios en Go.',
+        location: 'Medellín',
+        startDate: '2021',
+        endDate: null,
+        current: true,
+        achievements: ['Reducción de latencia en un 30%', 'Implementación de CI/CD con GitHub Actions']
+      }
+    ],
+    skills: {
+      technical: ['Golang', 'Docker', 'Kubernetes', 'gRPC', 'PostgreSQL', 'Redis'],
+      soft: ['Liderazgo Técnico', 'Resolución de Problemas', 'Mentoria']
+    },
+    education: [
+      {
+        institution: 'Universidad Nacional de Colombia',
+        degree: 'Ingeniería de Sistemas',
+        year: '2016'
+      }
+    ],
+    notes: ['Candidato referido por el equipo interno.', 'Muy buen dominio técnico detectado en la evaluación inicial de CV.']
+  } : candidatesData.find(candidate => {
     // Fallback: try to match by index if candidateId is a numeric string
     const numericId = parseInt(candidateId, 10);
     if (!isNaN(numericId)) {
       return candidatesData.indexOf(candidate) === numericId - 1;
     }
     return false;
-  }) || {
+  })) || {
     name: 'Candidato no encontrado',
     location: 'Desconocido',
     email: 'no-disponible@example.com',
