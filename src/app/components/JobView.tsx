@@ -95,6 +95,8 @@ export function JobView({
   const [filterStatus, setFilterStatus] = useState('all');
   const [serenaMode, setSerenaMode] = useState<'global' | 'search'>('global');
   const [isUploading, setIsUploading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<{ name: string; size: string } | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
 
   // Debug Refs
@@ -1091,38 +1093,72 @@ export function JobView({
               </p>
             </div>
 
-            <div 
-              className="relative group cursor-pointer"
-              onDragOver={(e) => e.preventDefault()}
-              onClick={() => {
-                setIsUploading(true);
-                handleImportCandidate({ name: 'Alejandro Martínez', avatar: 'AM' });
-                setTimeout(() => {
-                  setIsUploading(false);
-                  setIsImportModalOpen(false);
-                }, 100);
-              }}
-              onDrop={(e) => {
-                e.preventDefault();
-                setIsUploading(true);
-                handleImportCandidate({ name: 'Alejandro Martínez', avatar: 'AM' });
-                setTimeout(() => {
-                  setIsUploading(false);
-                  setIsImportModalOpen(false);
-                }, 100);
-              }}
-            >
-              <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-[32px] blur-md opacity-10 group-hover:opacity-20 transition duration-500"></div>
-              <div className="relative border-2 border-dashed border-gray-200 rounded-[32px] p-12 bg-white flex flex-col items-center group-hover:border-blue-400 group-hover:bg-blue-50/10 transition-all duration-300">
-                <div className="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                  <Upload className="w-8 h-8 text-blue-600" />
+            {!selectedFile ? (
+              <div
+                className="relative group cursor-pointer"
+                onDragOver={(e) => e.preventDefault()}
+                onClick={() => {
+                  setSelectedFile({
+                    name: 'CV_Alejandro_Martinez.pdf',
+                    size: '2.4 MB'
+                  });
+                }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setSelectedFile({
+                    name: 'CV_Alejandro_Martinez.pdf',
+                    size: '2.4 MB'
+                  });
+                }}
+              >
+                <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-[32px] blur-md opacity-10 group-hover:opacity-20 transition duration-500"></div>
+                <div className="relative border-2 border-dashed border-gray-200 rounded-[32px] p-12 bg-white flex flex-col items-center group-hover:border-blue-400 group-hover:bg-blue-50/10 transition-all duration-300">
+                  <div className="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <Upload className="w-8 h-8 text-blue-600" />
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-900 mb-1">Selecciona o arrastra tus archivos</h3>
+                  <p className="text-sm text-gray-500 font-medium text-center">
+                    PDF, DOCX o archivos ZIP comprimidos
+                  </p>
                 </div>
-                <h3 className="text-lg font-bold text-gray-900 mb-1">Selecciona o arrastra tus archivos</h3>
-                <p className="text-sm text-gray-500 font-medium text-center">
-                  PDF, DOCX o archivos ZIP comprimidos
-                </p>
               </div>
-            </div>
+            ) : (
+              <div className="bg-white rounded-[32px] border border-gray-100 overflow-hidden">
+                <div className="p-8">
+                  <div className="flex items-start gap-4">
+                    {/* File Icon */}
+                    <div className="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <FileText className="w-7 h-7 text-blue-600" />
+                    </div>
+
+                    {/* File Info */}
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-sm font-semibold text-gray-900 truncate">
+                        {selectedFile.name}
+                      </h4>
+                      <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
+                        <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded">
+                          PDF
+                        </span>
+                        <span>{selectedFile.size}</span>
+                      </div>
+                      <p className="text-xs text-gray-400 mt-3">
+                        Documento listo para ser procesado. Haz clic en "Comenzar Importación" abajo para extraer el perfil automáticamente.
+                      </p>
+                    </div>
+
+                    {/* Remove Button */}
+                    <button
+                      onClick={() => setSelectedFile(null)}
+                      className="text-gray-400 hover:text-red-600 transition-colors"
+                      title="Remover documento"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="mt-8">
               <div className="flex items-start gap-4 p-6 bg-gray-50 rounded-[24px] border border-gray-100 text-left w-full transition-all hover:shadow-sm">
@@ -1156,24 +1192,37 @@ export function JobView({
             >
               Cancelar
             </Button>
-            <Button 
-              disabled={!hasAcceptedTerms}
+            <Button
+              disabled={!hasAcceptedTerms || !selectedFile}
               onClick={() => {
+                if (!selectedFile) return;
+                setIsProcessing(true);
                 setIsUploading(true);
-                handleImportCandidate({ name: 'Alejandro Martínez', avatar: 'AM' });
+                // Simular procesamiento del documento
                 setTimeout(() => {
+                  handleImportCandidate({ name: 'Alejandro Martínez', avatar: 'AM' });
+                  setIsProcessing(false);
                   setIsUploading(false);
+                  setSelectedFile(null);
+                  setHasAcceptedTerms(false);
                   setIsImportModalOpen(false);
-                }, 100);
+                }, 2000);
               }}
               className={cn(
-                "px-14 h-[52px] rounded-2xl font-bold transition-all text-sm shadow-xl",
-                hasAcceptedTerms 
-                  ? "bg-blue-600 text-white hover:bg-blue-700 shadow-blue-200" 
+                "px-14 h-[52px] rounded-2xl font-bold transition-all text-sm shadow-xl flex items-center justify-center gap-2",
+                hasAcceptedTerms && selectedFile
+                  ? "bg-blue-600 text-white hover:bg-blue-700 shadow-blue-200"
                   : "bg-gray-100 text-gray-400 cursor-not-allowed shadow-none border border-gray-200"
               )}
             >
-              Comenzar Importación
+              {isProcessing ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Procesando...
+                </>
+              ) : (
+                'Comenzar Importación'
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
