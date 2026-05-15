@@ -9,3 +9,8 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Hide default dialog close button in import modal */
+.import-modal-content [data-slot='dialog-close'] {
+  display: none !important;
+}

@@ -1080,7 +1080,7 @@ export function JobView({
 
       {/* Modals & Overlays */}
       <Dialog open={isImportModalOpen} onOpenChange={setIsImportModalOpen}>
-        <DialogContent className="max-w-2xl p-0 overflow-hidden rounded-[32px] border-none shadow-[0_32px_64px_-12px_rgba(0,0,0,0.14)] bg-white [&_[data-slot='dialog-close']]:hidden">
+        <DialogContent className="import-modal-content max-w-2xl p-0 overflow-hidden rounded-[32px] border-none shadow-[0_32px_64px_-12px_rgba(0,0,0,0.14)] bg-white">
           <div className="relative p-12 bg-gradient-to-b from-blue-50/50 to-white">
             <button
               onClick={() => setIsImportModalOpen(false)}
