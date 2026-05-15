@@ -629,17 +629,20 @@ export function JobView({
               {vacancy?.status === 'draft' ? (
                 // En draft: dos botones separados
                 <>
-                  <Button
-                    onClick={() => {
-                      setSerenaMode('search');
-                      setIsSerenaOpen(true);
-                      setSearchTrigger(prev => prev + 1);
-                    }}
-                    className="h-11 px-6 rounded-full font-semibold text-xs transition-all flex items-center gap-2 shadow-lg bg-blue-100 text-blue-600 hover:bg-blue-200 shadow-blue-50"
-                  >
-                    <Search className="w-4 h-4" />
-                    Buscar Candidatos IA
-                  </Button>
+                  <div className="p-[2px] bg-gradient-to-r from-blue-600 via-indigo-600 to-fuchsia-600 rounded-full group transition-all hover:shadow-lg hover:shadow-indigo-100">
+                    <Button
+                      onClick={() => {
+                        setSerenaMode('search');
+                        setIsSerenaOpen(true);
+                        setSearchTrigger(prev => prev + 1);
+                      }}
+                      variant="ghost"
+                      className="bg-white hover:bg-transparent text-gray-600 font-semibold text-xs h-[40px] px-6 transition-all rounded-full flex items-center gap-2 relative overflow-hidden group-hover:text-white"
+                    >
+                      <Search className="w-4 h-4 text-blue-500 group-hover:text-white transition-colors" />
+                      <span className="group-hover:text-white transition-colors">Buscar Candidatos IA</span>
+                    </Button>
+                  </div>
 
                   <Button
                     onClick={() => setIsImportModalOpen(true)}
