@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { toast } from 'sonner';
-import { 
-  Search, 
-  ChevronDown, 
-  MoreVertical, 
-  MapPin, 
-  Calendar, 
-  Sparkles, 
-  X, 
+import {
+  Search,
+  ChevronDown,
+  MoreVertical,
+  MapPin,
+  Calendar,
+  Sparkles,
+  X,
   ExternalLink,
   Pencil,
   Trash2,
@@ -30,7 +30,9 @@ import {
   FileText,
   Printer,
   Check,
-  Loader2
+  Loader2,
+  AlertCircle,
+  RotateCw
 } from 'lucide-react';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
@@ -109,6 +111,7 @@ export function JobView({
   const [isUploading, setIsUploading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<{ name: string; size: string } | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [importCount, setImportCount] = useState(0);
 
 
   // Debug Refs
@@ -410,6 +413,9 @@ export function JobView({
       ]
     };
 
+    const newCount = importCount + 1;
+    setImportCount(newCount);
+
     setCandidatesList(prev => [
       {
         ...newCandidate,
@@ -420,18 +426,30 @@ export function JobView({
       ...prev
     ]);
 
-    // Simular procesamiento de importación CV
+    // Simular procesamiento de importación CV - Error en segunda importación
     setTimeout(() => {
-      setCandidatesList(prev =>
-        prev.map(c => c.id === newId ? {
-          ...c,
-          status: 'active',
-          importStatus: 'Importado',
-          importDate: new Date().toISOString(),
-          importId: `IMP-${String(Math.random()).substring(2, 7)}`
-        } : c)
-      );
-      toast.success(`${candidate.name} importado correctamente`);
+      if (newCount === 2) {
+        // Segunda importación genera error
+        setCandidatesList(prev =>
+          prev.map(c => c.id === newId ? {
+            ...c,
+            importStatus: 'Error'
+          } : c)
+        );
+        toast.error(`Error al importar ${candidate.name}. Por favor, intenta de nuevo.`);
+      } else {
+        // Primera importación: éxito
+        setCandidatesList(prev =>
+          prev.map(c => c.id === newId ? {
+            ...c,
+            status: 'active',
+            importStatus: 'Importado',
+            importDate: new Date().toISOString(),
+            importId: `IMP-${String(Math.random()).substring(2, 7)}`
+          } : c)
+        );
+        toast.success(`${candidate.name} importado correctamente`);
+      }
     }, 3000);
   };
   const [expandedSections, setExpandedSections] = useState<Record<string, { active: boolean; discarded: boolean }>>({
@@ -819,21 +837,31 @@ export function JobView({
                             {vacancy?.status === 'draft' ? (
                               <>
                                 <td className="px-6 py-4">
-                                  <div
-                                    onClick={(e) => handleCopy(e, candidate.identification, 'Identificación')}
-                                    className="group/item flex items-center gap-2 text-xs font-semibold text-gray-500 hover:text-blue-600 transition-colors"
-                                  >
-                                    {candidate.identification}
-                                    <Copy className="w-3 h-3 opacity-0 group-hover/item:opacity-100 transition-opacity" />
-                                  </div>
+                                  {candidate.importStatus === 'Error' ? (
+                                    <span className="text-xs font-semibold text-gray-400">--</span>
+                                  ) : (
+                                    <div
+                                      onClick={(e) => handleCopy(e, candidate.identification, 'Identificación')}
+                                      className="group/item flex items-center gap-2 text-xs font-semibold text-gray-500 hover:text-blue-600 transition-colors"
+                                    >
+                                      {candidate.identification}
+                                      <Copy className="w-3 h-3 opacity-0 group-hover/item:opacity-100 transition-opacity" />
+                                    </div>
+                                  )}
                                 </td>
                                 <td className="px-6 py-4">
-                                  <span className="text-xs font-semibold text-gray-600">
-                                    {candidate.importDate ? new Date(candidate.importDate).toLocaleDateString('es-CO') : 'N/A'}
-                                  </span>
+                                  {candidate.importStatus === 'Error' ? (
+                                    <span className="text-xs font-semibold text-gray-400">--</span>
+                                  ) : (
+                                    <span className="text-xs font-semibold text-gray-600">
+                                      {candidate.importDate ? new Date(candidate.importDate).toLocaleDateString('es-CO') : 'N/A'}
+                                    </span>
+                                  )}
                                 </td>
                                 <td className="px-6 py-4">
-                                  {candidate.importId ? (
+                                  {candidate.importStatus === 'Error' ? (
+                                    <span className="text-xs font-semibold text-gray-400">--</span>
+                                  ) : candidate.importId ? (
                                     <div
                                       onClick={(e) => handleCopy(e, candidate.importId, 'ID Importación')}
                                       className="group/item flex items-center gap-2 text-xs font-semibold text-gray-500 hover:text-blue-600 transition-colors"
@@ -846,25 +874,35 @@ export function JobView({
                                   )}
                                 </td>
                                 <td className="px-6 py-4">
-                                  <Badge className={cn(
-                                    "text-[10px] px-2 py-0.5 border-none font-semibold rounded-lg",
-                                    candidate.origin === 'Serena IA' ? "bg-indigo-50 text-indigo-600" : "bg-gray-100 text-gray-600"
-                                  )}>
-                                    {candidate.origin === 'Serena IA' && <Sparkles className="w-3 h-3 mr-1 inline" />}
-                                    {candidate.origin}
-                                  </Badge>
+                                  {candidate.importStatus === 'Error' ? (
+                                    <span className="text-xs font-semibold text-gray-400">--</span>
+                                  ) : (
+                                    <Badge className={cn(
+                                      "text-[10px] px-2 py-0.5 border-none font-semibold rounded-lg",
+                                      candidate.origin === 'Serena IA' ? "bg-indigo-50 text-indigo-600" : "bg-gray-100 text-gray-600"
+                                    )}>
+                                      {candidate.origin === 'Serena IA' && <Sparkles className="w-3 h-3 mr-1 inline" />}
+                                      {candidate.origin}
+                                    </Badge>
+                                  )}
                                 </td>
                                 <td className="px-6 py-4">
                                   <Badge className={cn(
                                     "text-[10px] px-2 py-0.5 border-none font-semibold rounded-lg transition-all duration-300",
                                     candidate.importStatus === 'En progreso' ? "bg-blue-50 text-blue-600 animate-pulse" :
                                     candidate.importStatus === 'Invitación enviada' ? "bg-blue-50 text-blue-600" :
+                                    candidate.importStatus === 'Error' ? "bg-red-50 text-red-600" :
                                     "bg-emerald-50 text-emerald-600"
                                   )}>
                                     {candidate.importStatus === 'En progreso' ? (
                                       <span className="flex items-center gap-1.5">
                                         <Loader2 className="w-3.5 h-3.5 animate-spin" />
                                         En progreso
+                                      </span>
+                                    ) : candidate.importStatus === 'Error' ? (
+                                      <span className="flex items-center gap-1.5">
+                                        <AlertCircle className="w-3.5 h-3.5" />
+                                        Error
                                       </span>
                                     ) : (
                                       candidate.importStatus
@@ -948,6 +986,20 @@ export function JobView({
                                     >
                                       <Mail className="w-3.5 h-3.5 mr-1 inline" />
                                       Reenviar invitación
+                                    </Button>
+                                  )}
+                                  {candidate.importStatus === 'Error' && (
+                                    <Button
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        setIsImportModalOpen(true);
+                                      }}
+                                      className="bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200 text-xs font-semibold px-2 py-1 rounded-md transition-colors"
+                                      size="sm"
+                                    >
+                                      <RotateCw className="w-3.5 h-3.5 mr-1 inline" />
+                                      Volver a cargar
                                     </Button>
                                   )}
                                 </>
