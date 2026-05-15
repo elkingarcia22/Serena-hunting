@@ -644,13 +644,16 @@ export function JobView({
                     </Button>
                   </div>
 
-                  <Button
-                    onClick={() => setIsImportModalOpen(true)}
-                    className="h-11 px-6 rounded-full font-semibold text-xs transition-all flex items-center gap-2 shadow-lg bg-gray-100 text-gray-600 hover:bg-gray-200 shadow-gray-50"
-                  >
-                    <Upload className="w-4 h-4" />
-                    Importar desde CV
-                  </Button>
+                  <Tooltip content="Importar desde CV">
+                    <Button
+                      onClick={() => setIsImportModalOpen(true)}
+                      variant="outline"
+                      size="icon"
+                      className="h-11 w-11 border-gray-200 text-gray-600 hover:bg-gray-50 bg-transparent transition-all rounded-xl"
+                    >
+                      <Upload className="w-4 h-4" />
+                    </Button>
+                  </Tooltip>
                 </>
               ) : (
                 // En published: dropdown original
