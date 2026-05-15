@@ -1080,8 +1080,15 @@ export function JobView({
 
       {/* Modals & Overlays */}
       <Dialog open={isImportModalOpen} onOpenChange={setIsImportModalOpen}>
-        <DialogContent className="max-w-2xl p-0 overflow-hidden rounded-[32px] border-none shadow-[0_32px_64px_-12px_rgba(0,0,0,0.14)] bg-white">
+        <DialogContent className="max-w-2xl p-0 overflow-hidden rounded-[32px] border-none shadow-[0_32px_64px_-12px_rgba(0,0,0,0.14)] bg-white [&_button[aria-label='Close']]:hidden">
           <div className="relative p-12 bg-gradient-to-b from-blue-50/50 to-white">
+            <button
+              onClick={() => setIsImportModalOpen(false)}
+              className="absolute top-6 right-6 w-10 h-10 rounded-xl bg-white text-blue-600 hover:bg-gray-50 border border-gray-200 transition-all shadow-sm flex items-center justify-center z-10"
+              title="Cerrar"
+            >
+              <X className="w-5 h-5" />
+            </button>
             
             <div className="text-center mb-10">
               <div className="w-20 h-20 bg-blue-600 text-white rounded-[24px] flex items-center justify-center mx-auto mb-6 shadow-xl shadow-blue-100 group">
@@ -1186,8 +1193,9 @@ export function JobView({
 
           <DialogFooter className="px-12 py-8 bg-gray-50/50 border-t border-gray-100 flex items-center justify-between sm:justify-between">
             <Button
+              variant="outline"
               onClick={() => setIsImportModalOpen(false)}
-              className="h-[52px] px-10 rounded-2xl bg-white text-blue-600 font-bold hover:bg-gray-50 border border-gray-200 transition-all shadow-sm hover:shadow-md"
+              className="h-[52px] px-10 rounded-2xl border-gray-200 text-gray-500 font-bold hover:bg-white hover:text-gray-700 hover:border-gray-300 transition-all bg-transparent"
             >
               Cancelar
             </Button>
