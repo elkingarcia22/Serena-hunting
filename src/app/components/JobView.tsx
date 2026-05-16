@@ -574,8 +574,10 @@ export function JobView({
   return (
     <>
       <div ref={rootRef} className="h-screen flex flex-col bg-gray-50 overflow-hidden font-sans">
-      <div ref={headerRef} className="z-10 flex-shrink-0">
-        <div className="max-w-[1600px] mx-auto px-8 pt-6">
+        <div className="flex-1 flex flex-row max-w-[1600px] w-full mx-auto overflow-hidden">
+          {/* Main Content Column (Header + Table/Kanban) */}
+          <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+            <div ref={headerRef} className="z-10 flex-shrink-0 pt-6 px-8">
           
           {/* Layer 1: Context & Navigation */}
           <div className="flex items-center justify-between mb-4">
@@ -794,12 +796,10 @@ export function JobView({
                 </button>
               );
             })}
-          </div>
         </div>
       </div>
 
-      <div ref={contentRef} className="flex-1 flex flex-row overflow-hidden justify-center bg-gray-50">
-        <div className="w-full max-w-[1600px] flex flex-row overflow-hidden">
+            <div ref={contentRef} className="flex-1 flex flex-col overflow-hidden bg-gray-50">
         {activeTab === 'cvs' && (
           <div className="flex-1 flex flex-col overflow-hidden">
             {/* Table View - Hidden if no candidates */}
@@ -1344,24 +1344,26 @@ export function JobView({
             </div>
           </div>
         )}
+            </div>
+          </div>
 
-        <div className={cn(
-          "transition-all duration-300 ease-in-out h-full",
-          isSerenaOpen ? "w-[452px] py-6 pr-8 opacity-100" : "w-0 overflow-hidden opacity-0"
-        )}>
-          <div className="h-full bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-            <SerenaIAPanel 
-              isOpen={isSerenaOpen} 
-              onClose={() => setIsSerenaOpen(false)}
-              mode={serenaMode}
-              allCandidates={candidatesData}
-              searchTrigger={searchTrigger}
-              onImportCandidate={handleImportCandidate}
-            />
+          {/* Serena AI Sidebar Panel - Full Height */}
+          <div className={cn(
+            "transition-all duration-300 ease-in-out h-full flex-shrink-0",
+            isSerenaOpen ? "w-[452px] py-6 pr-8 opacity-100" : "w-0 overflow-hidden opacity-0"
+          )}>
+            <div className="h-full bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              <SerenaIAPanel 
+                isOpen={isSerenaOpen} 
+                onClose={() => setIsSerenaOpen(false)}
+                mode={serenaMode}
+                allCandidates={candidatesData}
+                searchTrigger={searchTrigger}
+                onImportCandidate={handleImportCandidate}
+              />
+            </div>
           </div>
         </div>
-      </div>
-    </div>
 
       {/* Modals & Overlays */}
       <Dialog open={isImportModalOpen} onOpenChange={setIsImportModalOpen}>
